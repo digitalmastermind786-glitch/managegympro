@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "in.digitalmastermind.managegympro.login.twa",
+        "sha256_cert_fingerprints": ["E2:BE:36:49:E1:9F:FD:D9:3F:FE:76:DB:99:D9:9A:D5:63:4F:20:20:9A:1D:5F:2D:16:97:09:05:9E:EC:FD:EC"]
+      }
+    }]

@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ManageGym Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ManageGym Pro">
+<meta name="theme-color" content="#07070d">
+<link rel="manifest" href="/manifest.json">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07070d;--s1:#10101a;--s2:#161622;--s3:#1c1c2a;
+  --b1:#232332;--b2:#2c2c3e;--b3:#363650;
+  --ac:#b8ff00;--ac2:#8fcc00;
+  --tx:#eeeef5;--m1:#7070a0;--m2:#40405a;
+  --gn:#2ecc71;--rd:#ff4757;--bl:#4a90e2;--yl:#f9ca24;--pu:#a29bfe;
+  --r:8px;--rl:12px;--rx:18px;
+}
+*{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;font-size:14px}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
+input,select,textarea,button{font-family:'DM Sans',sans-serif}
+
+/* LOADING */
+#ls{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:18px}
+.ll{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--ac);letter-spacing:-1px}
+.ls2{font-size:12px;color:var(--m1)}
+.sp{width:26px;height:26px;border:2px solid var(--b2);border-top-color:var(--ac);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* AUTH */
+#as{min-height:100vh;display:none;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden}
+#as::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(184,255,0,.06) 0%,transparent 65%);pointer-events:none}
+.ac{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rx);padding:38px;width:100%;max-width:400px;z-index:1;position:relative}
+.ab{margin-bottom:26px}
+.al{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--ac);letter-spacing:-.5px}
+.at{font-size:11px;color:var(--m1);margin-top:2px;text-transform:uppercase;letter-spacing:.06em}
+.ah2{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:5px}
+.as2{font-size:13px;color:var(--m1);margin-bottom:22px;line-height:1.5}
+.fg{margin-bottom:13px}
+.fl{display:block;font-size:10px;color:var(--m1);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.fi{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:11px 13px;color:var(--tx);font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s}
+.fi:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(184,255,0,.08)}
+.fi::placeholder{color:var(--m2)}
+select.fi option{background:var(--s2);color:var(--tx)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.eb{background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.2);border-radius:var(--r);padding:10px 13px;font-size:12px;color:var(--rd);margin-bottom:12px;display:none;line-height:1.5}
+.sb2{background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);border-radius:var(--r);padding:10px 13px;font-size:12px;color:var(--gn);margin-bottom:12px;display:none;line-height:1.5}
+
+/* BUTTONS */
+.btn{padding:10px 17px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.btn svg{width:14px;height:14px;flex-shrink:0}
+.btp{background:var(--ac);color:#000}
+.btp:hover{background:var(--ac2);transform:translateY(-1px)}
+.bto{background:transparent;color:var(--tx);border:1px solid var(--b1)}
+.bto:hover{border-color:var(--ac);color:var(--ac)}
+.btd{background:rgba(255,71,87,.1);color:var(--rd);border:1px solid rgba(255,71,87,.15)}
+.btd:hover{background:rgba(255,71,87,.18)}
+.btg{background:rgba(46,204,113,.1);color:var(--gn);border:1px solid rgba(46,204,113,.15)}
+.btg:hover{background:rgba(46,204,113,.18)}
+.btb{background:rgba(74,144,226,.1);color:var(--bl);border:1px solid rgba(74,144,226,.15)}
+.btb:hover{background:rgba(74,144,226,.18)}
+.bty{background:rgba(249,202,36,.1);color:var(--yl);border:1px solid rgba(249,202,36,.15)}
+.btn-f{width:100%;justify-content:center;padding:12px}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-sm svg{width:12px;height:12px}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+
+/* SIDEBAR */
+#app{display:none;min-height:100vh}
+.sb{position:fixed;left:0;top:0;width:215px;height:100vh;background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;z-index:100}
+.sbl{padding:19px 15px;border-bottom:1px solid var(--b1)}
+.sbl-gym{display:flex;align-items:center;gap:10px;margin-bottom:2px}
+.sbl-logo-img{width:32px;height:32px;border-radius:6px;object-fit:cover;border:1px solid var(--b2)}
+.sbl-logo-init{width:32px;height:32px;border-radius:6px;background:var(--ac);color:#000;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sbl-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbl-tag{font-size:10px;color:var(--m1);text-transform:uppercase;letter-spacing:.06em}
+.sbn{padding:10px 8px;flex:1;overflow-y:auto}
+.sbs{font-size:10px;color:var(--m2);text-transform:uppercase;letter-spacing:.1em;padding:10px 8px 4px;font-weight:600}
+.si{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--r);cursor:pointer;color:var(--m1);margin-bottom:1px;transition:all .15s;font-size:13px;font-weight:500}
+.si:hover{background:var(--s2);color:var(--tx)}
+.si.act{background:var(--ac);color:#000;font-weight:600}
+.si svg{width:14px;height:14px;flex-shrink:0}
+.si-badge{margin-left:auto;background:var(--rd);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700}
+.si.act .si-badge{background:rgba(0,0,0,.2);color:#000}
+.sbf{padding:10px 8px;border-top:1px solid var(--b1)}
+.sbu{padding:9px 10px;background:var(--s2);border-radius:var(--r);margin-bottom:8px}
+.sbu-gym{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbu-email{font-size:11px;color:var(--m1);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* MAIN */
+.mn{margin-left:215px;padding:24px 26px;min-height:100vh;width:calc(100% - 215px);max-width:calc(100% - 215px)}
+.pg{display:none}
+.pg.act{display:block;animation:pi .18s ease}
+@keyframes pi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:14px;flex-wrap:wrap}
+.pt{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.4px}
+.pt span{color:var(--ac)}
+.ps{font-size:12px;color:var(--m1);margin-top:3px}
+.pa{display:flex;gap:9px;align-items:center}
+
+/* STATS */
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.sc{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rl);padding:16px}
+.sl{font-size:10px;color:var(--m1);margin-bottom:8px;display:flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.04em;font-weight:500}
+.sl svg{width:12px;height:12px;opacity:.6}
+.sv{font-family:'Syne',sans-serif;font-size:25px;font-weight:700;line-height:1}
+.sv.g{color:var(--gn)}.sv.r{color:var(--rd)}.sv.y{color:var(--yl)}.sv.b{color:var(--bl)}
+.sh{font-size:11px;color:var(--m2);margin-top:5px}
+
+/* CARD */
+.cd{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rl);overflow:hidden;margin-bottom:15px}
+.cd:last-child{margin-bottom:0}
+.ch{padding:12px 16px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between}
+.ct{font-family:'Syne',sans-serif;font-size:13px;font-weight:600}
+.cb{padding:16px}
+
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{padding:9px 14px;text-align:left;font-size:10px;color:var(--m1);font-weight:600;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--b1);white-space:nowrap}
+td{padding:11px 14px;font-size:13px;border-bottom:1px solid var(--b1);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(255,255,255,.012)}
+.tn{font-weight:500}
+.th{font-size:11px;color:var(--m1);margin-top:1px}
+
+/* MEMBER AVATAR */
+.av{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.av-init{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;flex-shrink:0;color:#fff}
+.td-av{display:flex;align-items:center;gap:10px}
+
+/* BADGES */
+.bge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.bg-g{background:rgba(46,204,113,.1);color:var(--gn);border:1px solid rgba(46,204,113,.12)}
+.bg-r{background:rgba(255,71,87,.1);color:var(--rd);border:1px solid rgba(255,71,87,.12)}
+.bg-y{background:rgba(249,202,36,.1);color:var(--yl);border:1px solid rgba(249,202,36,.12)}
+.bg-b{background:rgba(74,144,226,.1);color:var(--bl);border:1px solid rgba(74,144,226,.12)}
+.bg-p{background:rgba(162,155,254,.1);color:var(--pu);border:1px solid rgba(162,155,254,.12)}
+
+/* SEARCH */
+.srw{position:relative;margin-bottom:13px}
+.srw svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--m1);pointer-events:none}
+.sri{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:9px 13px 9px 34px;color:var(--tx);font-size:13px;outline:none;transition:border-color .2s}
+.sri:focus{border-color:var(--ac)}
+.sri::placeholder{color:var(--m2)}
+
+/* MODAL */
+.mo{position:fixed;inset:0;left:0;top:0;right:0;bottom:0;width:100vw;height:100vh;background:rgba(0,0,0,.85);z-index:9000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:20px}
+.mo.op{display:flex}
+.md{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rx);width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:mi .18s ease;position:relative;z-index:9001}
+@keyframes mi{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+.mh{padding:16px 20px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--s1);z-index:1}
+.mt{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+.mc{background:var(--s2);border:1px solid var(--b1);border-radius:6px;color:var(--m1);cursor:pointer;padding:4px 8px;font-size:13px;line-height:1;transition:all .15s}
+.mc:hover{color:var(--tx)}
+.mb{padding:20px}
+.mf{padding:12px 20px;border-top:1px solid var(--b1);display:flex;gap:9px;justify-content:flex-end}
+
+/* COLLECT MODAL */
+.cob{text-align:center}
+.coa{font-family:'Syne',sans-serif;font-size:40px;font-weight:800;color:var(--gn);line-height:1;margin-bottom:3px}
+.con{font-size:14px;color:var(--m1);margin-bottom:18px}
+.co-av-wrap{margin-bottom:14px}
+.qrw{width:185px;height:185px;border:2px solid var(--ac);border-radius:var(--rl);margin:0 auto 13px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center}
+.qrw img{width:100%;height:100%;object-fit:cover}
+.qr-emp{text-align:center;color:var(--m1);padding:12px;font-size:12px}
+.ub{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:10px 13px;margin-bottom:11px;text-align:left}
+.ul{font-size:10px;color:var(--m1);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.uv{font-size:15px;font-weight:600;color:var(--ac)}
+.cn{font-size:12px;color:var(--m1);line-height:1.5}
+
+/* REMINDER */
+.rc{background:var(--s2);border:1px solid var(--b1);border-radius:var(--rl);padding:14px 15px;margin-bottom:10px;transition:border-color .2s}
+.rc:hover{border-color:var(--b2)}
+.rt{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:10px}
+.rn{font-size:14px;font-weight:600}
+.rm{font-size:12px;color:var(--m1);margin-top:2px}
+.rtr{display:flex;align-items:center;gap:7px;margin-bottom:10px}
+.rd{width:8px;height:8px;border-radius:50%;background:var(--b2);flex-shrink:0}
+.rd.done{background:var(--gn)}
+.rd.next{background:var(--yl);box-shadow:0 0 0 3px rgba(249,202,36,.15)}
+.rd.fin{background:var(--rd)}
+.rl2{width:18px;height:1px;background:var(--b2)}
+.rl2.done{background:var(--gn)}
+.rlbl{font-size:11px;color:var(--m1)}
+.rba{display:flex;gap:7px;flex-wrap:wrap}
+
+/* DIET */
+.ml{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px 13px;margin-bottom:7px}
+.ml:last-child{margin-bottom:0}
+.mt2{font-size:10px;color:var(--ac);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+.mi2{font-size:13px;color:var(--tx);line-height:1.7}
+.macs{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+.mac{background:var(--s1);border:1px solid var(--b1);border-radius:20px;padding:4px 12px;font-size:12px;color:var(--m1)}
+.day-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
+.day-tab{padding:6px 12px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;background:var(--s2);border:1px solid var(--b1);color:var(--m1);transition:all .15s}
+.day-tab.act{background:var(--ac);color:#000;border-color:var(--ac)}
+
+/* PNL */
+.pg4{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+.pc{background:var(--s2);border:1px solid var(--b1);border-radius:var(--rl);padding:15px}
+.pl{font-size:10px;color:var(--m1);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.pv{font-family:'Syne',sans-serif;font-size:23px;font-weight:700}
+.er{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b1);font-size:13px}
+.er:last-child{border-bottom:none}
+
+/* SETTINGS */
+.st{font-size:10px;color:var(--m1);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--b1)}
+.qd{border:2px dashed var(--b1);border-radius:var(--rl);padding:20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;margin-bottom:12px}
+.qd:hover{border-color:var(--ac);background:rgba(184,255,0,.02)}
+.qd svg{width:28px;height:28px;margin:0 auto 8px;display:block;color:var(--m1);opacity:.3}
+.qp{width:100px;height:100px;border-radius:var(--r);object-fit:cover;border:2px solid var(--ac);margin:0 auto 8px;display:block}
+.logo-p{width:80px;height:80px;border-radius:var(--rl);object-fit:cover;border:2px solid var(--ac);margin:0 auto 8px;display:block}
+
+/* EMPTY */
+.emp{text-align:center;padding:42px 20px;color:var(--m1)}
+.emp svg{width:34px;height:34px;margin:0 auto 10px;display:block;opacity:.2}
+.emp p{font-size:14px;font-weight:500}
+.emp small{font-size:12px;color:var(--m2);display:block;margin-top:3px}
+
+/* TOAST */
+.tst{position:fixed;bottom:20px;right:20px;background:var(--s1);border:1px solid var(--b1);border-left:3px solid var(--ac);border-radius:var(--r);padding:10px 15px;font-size:13px;z-index:9999;transform:translateY(60px);opacity:0;transition:all .25s;max-width:290px;line-height:1.4}
+.tst.show{transform:translateY(0);opacity:1}
+.tst.ok{border-left-color:var(--gn)}
+.tst.er{border-left-color:var(--rd)}
+
+/* PDF preview */
+#pdfPreview{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:2000;align-items:center;justify-content:center;padding:20px}
+.pdf-box{background:white;border-radius:var(--rl);padding:32px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;color:#111;font-family:'DM Sans',sans-serif}
+.pdf-close-btn{position:fixed;top:20px;right:20px;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:8px 14px;color:var(--tx);cursor:pointer;font-size:13px;display:flex;gap:6px;align-items:center}
+
+@media(max-width:960px){.sg{grid-template-columns:repeat(2,1fr)}}
+/* ── MOBILE BOTTOM NAV ── */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--s1);border-top:1px solid var(--b1);z-index:500;padding:0;safe-area-inset-bottom:env(safe-area-inset-bottom)}
+.bn-items{display:flex;align-items:center;justify-content:space-around;padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;cursor:pointer;color:var(--m1);transition:all 0.15s;border-radius:8px;min-width:52px;position:relative}
+.bn-item.act{color:var(--ac)}
+.bn-item svg{width:20px;height:20px}
+.bn-item span{font-size:10px;font-weight:500}
+.bn-badge{position:absolute;top:4px;right:8px;background:var(--rd);color:#fff;font-size:9px;padding:1px 5px;border-radius:10px;font-weight:700}
+
+@media(max-width:768px){
+  /* Hide desktop sidebar */
+  .sb{display:none}
+  /* Show bottom nav */
+  .bottom-nav{display:block}
+  /* Full width main */
+  .mn{margin-left:0;padding:14px 14px 80px;width:100%;max-width:100%}
+  /* Stats 2 column */
+  .sg{grid-template-columns:1fr 1fr;gap:10px}
+  .sc{padding:14px}
+  .sv{font-size:22px}
+  /* Forms single column */
+  .fr,.pg4{grid-template-columns:1fr}
+  /* Page header stack */
+  .ph{flex-direction:column;gap:10px}
+  .pa{width:100%}
+  .pa .btn{width:100%;justify-content:center}
+  /* Tables scroll */
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:500px}
+  /* Cards */
+  .cd{border-radius:10px}
+  .ch{padding:12px 14px}
+  .cb{padding:14px}
+  /* Modal full screen on mobile */
+  .mo{padding:0;align-items:flex-end}
+  .md{max-width:100%!important;border-radius:var(--rx) var(--rx) 0 0;max-height:92vh}
+  /* Auth card */
+  .ac{padding:24px 20px}
+  /* Page title */
+  .pt{font-size:18px}
+  /* Reminder cards */
+  .rc{padding:12px}
+  .rba{gap:6px}
+  .rba .btn{font-size:11px;padding:5px 9px}
+  /* Diet tabs */
+  .day-tabs{gap:4px}
+  .day-tab{padding:5px 10px;font-size:11px}
+  /* PNL */
+  .pg4{grid-template-columns:1fr 1fr}
+  /* Member table actions */
+  td .btn{font-size:11px;padding:4px 8px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="ls"><div class="ll">ManageGym Pro</div><div class="ls2">Loading your gym...</div><div class="sp"></div></div>
+
+<!-- AUTH -->
+<div id="as">
+  <div class="ac">
+    <div class="ab"><div class="al">ManageGym Pro</div><div class="at">Gym Management Software</div></div>
+    <div class="ah2">Welcome back</div>
+    <div class="as2">Login to manage your gym. Don't have access? Contact your administrator.</div>
+    <div class="eb" id="authErr"></div>
+    <div class="sb2" id="authSuc"></div>
+    <div class="fg"><label class="fl">Email Address</label><input type="email" class="fi" id="lEmail" placeholder="you@gmail.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="fg"><label class="fl">Password</label><input type="password" class="fi" id="lPass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn btp btn-f" id="lBtn" onclick="doLogin()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Login to ManageGym Pro
+    </button>
+    <p style="text-align:center;margin-top:14px"><button onclick="showForgot()" style="background:none;border:none;color:var(--ac);font-size:13px;cursor:pointer;text-decoration:underline">Forgot password?</button></p>
+
+    <!-- DOWNLOAD APP SECTION -->
+    <div id="installAppSection" style="margin-top:24px;padding-top:20px;border-top:1px solid var(--b1)">
+      <div style="display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:14px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--m1)" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        <span style="font-size:12px;color:var(--m1)">Install ManageGym Pro on your phone</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <button onclick="installAndroid()" style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:10px;cursor:pointer;text-align:center;transition:all 0.2s" onmouseover="this.style.borderColor='var(--ac)'" onmouseout="this.style.borderColor='var(--b1)'">
+          <img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/android.svg" width="28" height="28" style="margin:0 auto 6px;display:block;filter:invert(1) sepia(1) saturate(3) hue-rotate(80deg)">
+          <div style="font-size:12px;font-weight:600;color:var(--tx)">Android</div>
+          <div style="font-size:10px;color:var(--m1);margin-top:2px">Add to Home Screen</div>
+        </button>
+        <button onclick="installIOS()" style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:10px;cursor:pointer;text-align:center;transition:all 0.2s" onmouseover="this.style.borderColor='var(--ac)'" onmouseout="this.style.borderColor='var(--b1)'">
+          <img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/apple.svg" width="28" height="28" style="margin:0 auto 6px;display:block;filter:brightness(0) invert(1)">
+          <div style="font-size:12px;font-weight:600;color:var(--tx)">iPhone</div>
+          <div style="font-size:10px;color:var(--m1);margin-top:2px">Add to Home Screen</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- INSTALL INSTRUCTIONS MODAL -->
+    <div id="installModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;align-items:flex-end;justify-content:center;padding:20px">
+      <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--rx);padding:24px;width:100%;max-width:400px;margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-family:Syne,sans-serif;font-size:16px;font-weight:700" id="installTitle">Install App</div>
+          <button onclick="document.getElementById('installModal').style.display='none'" style="background:var(--s2);border:1px solid var(--b1);border-radius:6px;color:var(--m1);cursor:pointer;padding:4px 10px;font-size:14px">✕</button>
+        </div>
+        <div id="installSteps"></div>
+      </div>
+    </div>
+    <!-- FORGOT PASSWORD SECTION -->
+    <div id="forgotSection" style="display:none;margin-top:16px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:16px">
+      <p style="font-size:13px;color:var(--m1);margin-bottom:12px">Enter your email and we'll send a password reset link.</p>
+      <div class="fg"><input type="email" class="fi" id="forgotEmail" placeholder="your@email.com"></div>
+      <div class="eb" id="forgotErr"></div>
+      <div class="sb2" id="forgotSuc"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btp btn-sm" onclick="sendReset()">Send Reset Link</button>
+        <button class="btn bto btn-sm" onclick="hideForgot()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SET PASSWORD SCREEN (shown when user clicks invite link) -->
+<div id="setPassScreen" style="display:none;position:fixed;inset:0;width:100vw;height:100vh;align-items:center;justify-content:center;padding:20px;background:var(--bg);z-index:9999;overflow:auto">
+  <div style="position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(184,255,0,.06) 0%,transparent 65%);pointer-events:none"></div>
+  <div class="ac" style="z-index:1;position:relative">
+    <div class="ab"><div class="al">ManageGym Pro</div><div class="at">Gym Management Software</div></div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="width:56px;height:56px;background:rgba(184,255,0,.1);border:1px solid rgba(184,255,0,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div style="font-family:Syne,sans-serif;font-size:18px;font-weight:700;margin-bottom:6px">Welcome to ManageGym Pro!</div>
+      <div style="font-size:13px;color:var(--m1);line-height:1.5">Your account is ready. Set a password to start managing your gym.</div>
+    </div>
+    <div class="eb" id="spErr"></div>
+    <div class="fg"><label class="fl">New Password</label><input type="password" class="fi" id="spPass" placeholder="Create a password (min 6 characters)" onkeydown="if(event.key==='Enter')doSetInvitePassword()"></div>
+    <div class="fg"><label class="fl">Confirm Password</label><input type="password" class="fi" id="spConfirm" placeholder="Repeat your password" onkeydown="if(event.key==='Enter')doSetInvitePassword()"></div>
+    <button class="btn btp btn-f" id="spBtn" onclick="doSetInvitePassword()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      Set Password & Enter App
+    </button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="sb">
+    <div class="sbl">
+      <div class="sbl-gym">
+        <div class="sbl-logo-init" id="sbLogoInit">G</div>
+        <img class="sbl-logo-img" id="sbLogoImg" src="" alt="" style="display:none">
+        <div style="overflow:hidden"><div class="sbl-name" id="sbGymName">My Gym</div></div>
+      </div>
+      <div class="sbl-tag">ManageGym Pro</div>
+    </div>
+    <nav class="sbn">
+      <div class="sbs">Overview</div>
+      <div class="si act" onclick="nav('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Dashboard</span></div>
+      <div class="si" onclick="nav('members')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Members</span></div>
+      <div class="sbs">Finance</div>
+      <div class="si" onclick="nav('fees')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Pending Fees</span><span class="si-badge" id="pendBadge" style="display:none">0</span></div>
+      <div class="si" onclick="nav('pnl')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg><span>P&L Report</span></div>
+      <div class="sbs">Tools</div>
+      <div class="si" onclick="nav('reminders')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Reminders</span></div>
+      <div class="si" onclick="nav('diet')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><span>Diet Plans</span></div>
+      <div class="si" onclick="nav('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg><span>Settings</span></div>
+    </nav>
+    <div class="sbf">
+      <div class="sbu"><div class="sbu-gym" id="sbGymName2">Loading...</div><div class="sbu-email" id="sbEmail">-</div></div>
+      <button class="btn bto btn-f btn-sm" onclick="doLogout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV (mobile only) -->
+  <div class="bottom-nav">
+    <div class="bn-items">
+      <div class="bn-item act" id="bn-dashboard" onclick="nav('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="bn-item" id="bn-members" onclick="nav('members')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Members</span>
+      </div>
+      <div class="bn-item" id="bn-fees" onclick="nav('fees')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Fees</span>
+        <span class="bn-badge" id="bnBadge" style="display:none">0</span>
+      </div>
+      <div class="bn-item" id="bn-reminders" onclick="nav('reminders')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span>Remind</span>
+      </div>
+      <div class="bn-item" id="bn-more" onclick="toggleMoreMenu()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+        <span>More</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MORE MENU (mobile) -->
+  <div id="moreMenu" style="display:none;position:fixed;bottom:65px;left:0;right:0;background:var(--s1);border-top:1px solid var(--b1);z-index:499;padding:12px;animation:slideUp 0.2s ease">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div onclick="nav('diet');toggleMoreMenu()" style="background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:14px 8px;text-align:center;cursor:pointer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2" style="margin:0 auto 6px;display:block"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        <div style="font-size:11px;color:var(--tx);font-weight:500">Diet Plans</div>
+      </div>
+      <div onclick="nav('pnl');toggleMoreMenu()" style="background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:14px 8px;text-align:center;cursor:pointer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2" style="margin:0 auto 6px;display:block"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        <div style="font-size:11px;color:var(--tx);font-weight:500">P&L Report</div>
+      </div>
+      <div onclick="nav('settings');toggleMoreMenu()" style="background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:14px 8px;text-align:center;cursor:pointer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2" style="margin:0 auto 6px;display:block"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        <div style="font-size:11px;color:var(--tx);font-weight:500">Settings</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mn">
+
+    <!-- DASHBOARD -->
+    <div class="pg act" id="pg-dashboard">
+      <div class="ph"><div><div class="pt">Dashboard <span>Overview</span></div><div class="ps" id="todayDate"></div></div><div class="pa"><button class="btn btp" onclick="openM('addMemberM')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Member</button></div></div>
+      <div class="sg">
+        <div class="sc"><div class="sl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Total Members</div><div class="sv b" id="stTotal">0</div><div class="sh">Active memberships</div></div>
+        <div class="sc"><div class="sl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Collected</div><div class="sv g" id="stColl">₹0</div><div class="sh">This month</div></div>
+        <div class="sc"><div class="sl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Pending</div><div class="sv r" id="stPend">₹0</div><div class="sh">Needs collection</div></div>
+        <div class="sc"><div class="sl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Due This Week</div><div class="sv y" id="stDue">0</div><div class="sh">Members to remind</div></div>
+      </div>
+      <div class="cd"><div class="ch"><div class="ct">Recent Members</div><button class="btn bto btn-sm" onclick="nav('members')">View All</button></div><div class="tw"><table><thead><tr><th>Member</th><th>Plan</th><th>Status</th><th>Due Date</th><th>Action</th></tr></thead><tbody id="dashTbl"></tbody></table></div></div>
+    </div>
+
+    <!-- MEMBERS -->
+    <div class="pg" id="pg-members">
+      <div class="ph"><div><div class="pt">Members <span>List</span></div></div><div class="pa"><button class="btn btp" onclick="openM('addMemberM')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Member</button></div></div>
+      <div class="srw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" class="sri" placeholder="Search by name or phone..." oninput="filterM(this.value)"></div>
+      <div class="cd"><div class="tw"><table><thead><tr><th>Member</th><th>Plan</th><th>Fee</th><th>Status</th><th>Due Date</th><th>Actions</th></tr></thead><tbody id="memTbl"></tbody></table></div></div>
+    </div>
+
+    <!-- FEES -->
+    <div class="pg" id="pg-fees">
+      <div class="ph"><div><div class="pt">Pending <span>Fees</span></div><div class="ps" id="feeSub"></div></div></div>
+      <div class="cd"><div class="tw"><table><thead><tr><th>Member</th><th>Plan</th><th>Amount</th><th>Due</th><th>Overdue</th><th>Actions</th></tr></thead><tbody id="feeTbl"></tbody></table></div></div>
+    </div>
+
+    <!-- REMINDERS -->
+    <div class="pg" id="pg-reminders">
+      <div class="ph"><div><div class="pt">Payment <span>Reminders</span></div><div class="ps">3-stage follow-up system with 2-day gaps</div></div></div>
+      <div id="remCont"></div>
+    </div>
+
+    <!-- DIET -->
+    <div class="pg" id="pg-diet">
+      <div class="ph"><div><div class="pt">AI Diet <span>Plans</span></div><div class="ps">7-day authentic Indian meal plans</div></div></div>
+      <div class="cd" style="margin-bottom:16px">
+        <div class="ch"><div class="ct">Generate Diet Plan</div></div>
+        <div class="cb">
+          <div class="fr">
+            <div class="fg"><label class="fl">Member</label><select class="fi" id="dMember"><option value="">Select member</option></select></div>
+            <div class="fg"><label class="fl">Goal</label><select class="fi" id="dGoal"><option value="weight_loss">Weight Loss</option><option value="muscle_gain">Muscle Gain</option><option value="maintain">Maintain Weight</option><option value="endurance">Endurance</option></select></div>
+          </div>
+          <div class="fr">
+            <div class="fg"><label class="fl">Diet Type</label><select class="fi" id="dType"><option value="veg">Vegetarian</option><option value="nonveg">Non-Vegetarian</option></select></div>
+            <div class="fg"><label class="fl">Daily Budget</label><select class="fi" id="dBudget"><option value="100">₹100-150/day (Budget)</option><option value="200" selected>₹200-250/day (Middle)</option><option value="300">₹300+/day (Premium)</option></select></div>
+          </div>
+          <button class="btn btp" onclick="genDiet()" id="dietBtn">Generate 7-Day Plan</button>
+        </div>
+      </div>
+      <div id="dietOut"></div>
+    </div>
+
+    <!-- PNL -->
+    <div class="pg" id="pg-pnl">
+      <div class="ph"><div><div class="pt">P&L <span>Report</span></div></div></div>
+      <div class="pg4">
+        <div class="pc"><div class="pl">Total Revenue</div><div class="pv" style="color:var(--gn)" id="pRev">₹0</div></div>
+        <div class="pc"><div class="pl">Total Expenses</div><div class="pv" style="color:var(--rd)" id="pExp">₹0</div></div>
+        <div class="pc"><div class="pl">Net Profit</div><div class="pv" style="color:var(--ac)" id="pProfit">₹0</div></div>
+        <div class="pc"><div class="pl">Pending Collection</div><div class="pv" style="color:var(--bl)" id="pPend">₹0</div></div>
+      </div>
+      <div class="cd" style="margin-bottom:15px"><div class="ch"><div class="ct">Add Expense</div></div><div class="cb"><div class="fr"><div class="fg"><label class="fl">Type</label><select class="fi" id="eType"><option>Rent</option><option>Electricity</option><option>Equipment</option><option>Staff Salary</option><option>Maintenance</option><option>Other</option></select></div><div class="fg"><label class="fl">Amount (₹)</label><input type="number" class="fi" id="eAmt" placeholder="5000"></div></div><button class="btn btp btn-sm" onclick="addExp()">Add Expense</button></div></div>
+      <div class="cd"><div class="ch"><div class="ct">Expense Breakdown</div></div><div class="cb" id="expList"></div></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="pg" id="pg-settings">
+      <div class="ph"><div><div class="pt">Gym <span>Settings</span></div></div></div>
+      <div class="cd"><div class="cb">
+        <div class="st">Gym Logo</div>
+        <div class="qd" id="logoArea" onclick="document.getElementById('logoFile').click()">
+          <img class="logo-p" id="logoPrev" style="display:none" src="" alt="">
+          <div id="logoPrompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p style="font-size:13px;color:var(--m1)">Click to upload gym logo</p><p style="font-size:11px;color:var(--m2);margin-top:3px">PNG, JPG • Shows on sidebar & diet PDFs</p></div>
+          <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="handleLogo(event)">
+        </div>
+        <div class="st" style="margin-top:20px">Gym Information</div>
+        <div class="fr">
+          <div class="fg"><label class="fl">Gym Name</label><input type="text" class="fi" id="sGymName" placeholder="PowerZone Fitness"></div>
+          <div class="fg"><label class="fl">Owner Phone</label><input type="text" class="fi" id="sPhone" placeholder="9876543210"></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label class="fl">State</label><select class="fi" id="sState"><option value="">Select State</option></select></div>
+          <div class="fg"><label class="fl">City</label><input type="text" class="fi" id="sCity" placeholder="Enter your city (e.g. Varanasi)"></div>
+        </div>
+        <div class="fg"><label class="fl">UPI ID</label><input type="text" class="fi" id="sUpi" placeholder="yourgym@paytm"></div>
+        <div class="st" style="margin-top:20px">Payment QR Code</div>
+        <p style="font-size:13px;color:var(--m1);margin-bottom:13px">Upload your PhonePe / GPay / Paytm QR code. Shown when collecting fees from members.</p>
+        <div class="qd" id="qrArea" onclick="document.getElementById('qrFile').click()">
+          <img class="qp" id="qrPrev" style="display:none" src="" alt="">
+          <div id="qrPrompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/></svg><p style="font-size:13px;color:var(--m1)">Click to upload QR image</p><p style="font-size:11px;color:var(--m2);margin-top:3px">PNG, JPG supported</p></div>
+          <input type="file" id="qrFile" accept="image/*" style="display:none" onchange="handleQR(event)">
+        </div>
+        <button class="btn btp" onclick="saveSettings()" style="margin-top:8px">Save Settings</button>
+        
+        <!-- Logout button - visible on mobile in settings -->
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--b1)" class="mobile-logout">
+          <div class="st">Account</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:14px 16px">
+            <div>
+              <div style="font-size:14px;font-weight:500" id="settingsEmail">-</div>
+              <div style="font-size:12px;color:var(--m1);margin-top:2px">Logged in account</div>
+            </div>
+            <button class="btn btd btn-sm" onclick="doLogout()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Logout
+            </button>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD MEMBER MODAL -->
+<div class="mo" id="addMemberM">
+  <div class="md">
+    <div class="mh"><div class="mt">Add New Member</div><button class="mc" onclick="closeM('addMemberM')">✕</button></div>
+    <div class="mb">
+      <div class="fg" style="text-align:center;margin-bottom:16px">
+        <div id="mAvPrev" style="width:70px;height:70px;border-radius:50%;background:var(--s2);border:2px dashed var(--b2);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden" onclick="document.getElementById('mPhotoFile').click()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <p style="font-size:11px;color:var(--m1)">Click to add photo (optional)</p>
+        <input type="file" id="mPhotoFile" accept="image/*" style="display:none" onchange="handleMemberPhoto(event)">
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Full Name *</label><input type="text" class="fi" id="mName" placeholder="Rahul Sharma"></div>
+        <div class="fg"><label class="fl">Phone *</label><input type="tel" class="fi" id="mPhone" placeholder="9876543210"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Age (optional)</label><input type="number" class="fi" id="mAge" placeholder="25"></div>
+        <div class="fg"><label class="fl">Weight kg (optional)</label><input type="number" class="fi" id="mWeight" placeholder="70"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Membership Plan</label><select class="fi" id="mPlan"><option value="Monthly">Monthly</option><option value="Quarterly">Quarterly (3 months)</option><option value="Half Yearly">Half Yearly (6 months)</option><option value="Yearly">Yearly</option></select></div>
+        <div class="fg"><label class="fl">Fee Amount (₹) *</label><input type="number" class="fi" id="mFee" placeholder="1500"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Join Date</label><input type="date" class="fi" id="mJoin"></div>
+        <div class="fg"><label class="fl">Payment Status</label><select class="fi" id="mStatus"><option value="Paid">Paid</option><option value="Pending">Pending</option></select></div>
+      </div>
+      <div class="fg"><label class="fl">Fitness Goal</label><select class="fi" id="mGoal"><option>Weight Loss</option><option>Muscle Gain</option><option>General Fitness</option><option>Endurance</option></select></div>
+    </div>
+    <div class="mf"><button class="btn bto" onclick="closeM('addMemberM')">Cancel</button><button class="btn btp" onclick="addMember()">Add Member</button></div>
+  </div>
+</div>
+
+<!-- COLLECT MODAL -->
+<div class="mo" id="collectM">
+  <div class="md" style="max-width:400px">
+    <div class="mh"><div class="mt">Collect Fee</div><button class="mc" onclick="closeM('collectM')">✕</button></div>
+    <div class="mb">
+      <div class="cob">
+        <div class="co-av-wrap" id="coAvWrap"></div>
+        <div class="coa" id="coAmt">₹0</div>
+        <div class="con" id="coName">Member Name</div>
+        <div class="qrw" id="qrImgWrap"><div class="qr-emp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:28px;height:28px;margin:0 auto 6px;display:block;opacity:.3"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/></svg><p>Upload QR in Settings</p></div></div>
+        <div class="ub"><div class="ul">UPI ID</div><div class="uv" id="coUpi">Not set</div></div>
+        <p class="cn">Ask member to scan QR or pay to UPI ID above. Tap Mark as Paid once payment is done.</p>
+      </div>
+    </div>
+    <div class="mf"><button class="btn bto" onclick="closeM('collectM')">Close</button><button class="btn btg" onclick="markPaid()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Mark as Paid</button></div>
+  </div>
+</div>
+
+<!-- PDF PREVIEW -->
+<div id="pdfPreview">
+  <button class="pdf-close-btn" onclick="closePDF()">✕ Close</button>
+  <div class="pdf-box" id="pdfBox"></div>
+</div>
+
+<div class="tst" id="toast"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+const SB_URL = 'https://gyrzgdzbypbmvwidhfsf.supabase.co';
+const SB_KEY = 'sb_publishable_PEsVcd4kuyvD-aka7tyqSQ_YPu53JXr';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let user = null, gym = null, members = [], expenses = [];
+let collectId = null, memberPhotoB64 = null;
+let currentDietPlan = null;
+
+// ── INDIAN STATES & CITIES ───────────────────────────────────────────────────
+const STATES_CITIES = {
+  "Uttar Pradesh": ["Varanasi","Lucknow","Agra","Kanpur","Allahabad","Meerut","Noida","Ghaziabad","Gorakhpur","Mathura"],
+  "Maharashtra": ["Mumbai","Pune","Nagpur","Nashik","Aurangabad","Solapur","Thane","Kolhapur","Navi Mumbai","Amravati"],
+  "Delhi": ["New Delhi","Dwarka","Rohini","Laxmi Nagar","Saket","Janakpuri","Karol Bagh","Connaught Place"],
+  "Karnataka": ["Bengaluru","Mysuru","Hubli","Mangaluru","Belagavi","Dharwad","Tumkur","Udupi"],
+  "Tamil Nadu": ["Chennai","Coimbatore","Madurai","Tiruchirappalli","Salem","Tirunelveli","Erode","Vellore"],
+  "Gujarat": ["Ahmedabad","Surat","Vadodara","Rajkot","Gandhinagar","Bhavnagar","Jamnagar","Junagadh"],
+  "Rajasthan": ["Jaipur","Jodhpur","Udaipur","Kota","Ajmer","Bikaner","Pushkar","Bharatpur"],
+  "West Bengal": ["Kolkata","Howrah","Durgapur","Asansol","Siliguri","Burdwan","Malda"],
+  "Punjab": ["Amritsar","Ludhiana","Jalandhar","Patiala","Mohali","Bathinda","Pathankot"],
+  "Haryana": ["Gurugram","Faridabad","Panipat","Ambala","Rohtak","Karnal","Hisar"],
+  "Madhya Pradesh": ["Bhopal","Indore","Jabalpur","Gwalior","Ujjain","Sagar","Dewas"],
+  "Andhra Pradesh": ["Visakhapatnam","Vijayawada","Guntur","Tirupati","Kakinada","Nellore"],
+  "Telangana": ["Hyderabad","Warangal","Karimnagar","Nizamabad","Khammam","Secunderabad"],
+  "Kerala": ["Thiruvananthapuram","Kochi","Kozhikode","Thrissur","Kollam","Kannur"],
+  "Bihar": ["Patna","Gaya","Bhagalpur","Muzaffarpur","Purnia","Darbhanga"],
+  "Odisha": ["Bhubaneswar","Cuttack","Rourkela","Brahmapur","Sambalpur"],
+  "Jharkhand": ["Ranchi","Jamshedpur","Dhanbad","Bokaro","Deoghar"],
+  "Uttarakhand": ["Dehradun","Haridwar","Rishikesh","Nainital","Roorkee"],
+  "Himachal Pradesh": ["Shimla","Manali","Dharamshala","Solan","Kullu"],
+  "Chhattisgarh": ["Raipur","Bilaspur","Durg","Korba","Rajnandgaon"],
+  "Goa": ["Panaji","Margao","Vasco da Gama","Mapusa"]
+};
+
+function loadStates() {
+  const sel = document.getElementById('sState');
+  Object.keys(STATES_CITIES).sort().forEach(s => {
+    const o = document.createElement('option'); o.value = s; o.textContent = s;
+    sel.appendChild(o);
+  });
+}
+
+function updateCities() {
+  // City is now a free text input - no action needed
+}
+
+// ── REGION DETECTION ─────────────────────────────────────────────────────────
+function getRegion(state) {
+  const south = ['Karnataka','Tamil Nadu','Kerala','Andhra Pradesh','Telangana','Goa'];
+  const east = ['West Bengal','Odisha','Jharkhand','Bihar'];
+  const west = ['Gujarat','Rajasthan','Maharashtra'];
+  if (south.includes(state)) return 'south';
+  if (east.includes(state)) return 'east';
+  if (west.includes(state)) return 'west';
+  return 'north';
+}
+
+// ── 7-DAY DIET PLANS ─────────────────────────────────────────────────────────
+const MEALS = {
+  north: {
+    weight_loss: {
+      veg: {
+        100: [
+          {b:"Moong dal chilla (2) + green chutney + black chai (no sugar)",mm:"Guava/seasonal fruit + roasted chana (handful)",l:"2 phulka + moong dal + lauki sabzi + kheera-pyaaz salad + nimbu",pw:"Banana + green tea",po:"Sattu sharbat (2 tbsp sattu + nimbu + kala namak)",d:"2 phulka + palak dal + chhachh",cal:"1450 kcal",p:"52g",c:"195g",f:"32g"},
+          {b:"Oats daliya (1 bowl) with skimmed milk + half banana",mm:"5 badam (soaked) + seasonal fruit",l:"Brown rice (1 katori) + arhar dal + tinda sabzi + dahi",pw:"4-5 khajoor + green tea",po:"Sattu + water + nimbu",d:"2 phulka + chana dal + karela sabzi + salad",cal:"1480 kcal",p:"54g",c:"200g",f:"30g"},
+          {b:"Poha (1 bowl) + onion + mustard + nimbu + green chutney",mm:"Chhachh (1 glass) + roasted makhana",l:"2 phulka + rajma (small portion) + baingan sabzi + dahi",pw:"Banana + black coffee",po:"Sattu sharbat",d:"Moong dal khichdi (1 bowl) + dahi + salad",cal:"1460 kcal",p:"50g",c:"198g",f:"31g"},
+          {b:"Besan chilla (2) + pudina chutney + adrak chai",mm:"Apple/pear + sprouts (half katori)",l:"2 phulka + masoor dal + bhindi sabzi + kachumber salad",pw:"Green tea + banana",po:"Sattu + water",d:"2 phulka + chane ki dal + turai sabzi + chhachh",cal:"1440 kcal",p:"51g",c:"192g",f:"30g"},
+          {b:"Dalia upma (1 bowl) + dahi + green tea",mm:"Amrud (guava) + roasted chana",l:"Brown rice + sambhar style dal + salad + dahi",pw:"Banana + black chai",po:"Sattu sharbat",d:"2 phulka + moong dal + pumpkin sabzi + salad",cal:"1470 kcal",p:"53g",c:"196g",f:"29g"},
+          {b:"Upma (1 bowl) with vegetables + green tea",mm:"Chhachh + 5 akhrot",l:"2 phulka + chana dal + lauki sabzi + salad + dahi",pw:"Khajoor (2-3) + green tea",po:"Sattu + nimbu pani",d:"Moong dal khichdi + dahi + papad",cal:"1455 kcal",p:"50g",c:"194g",f:"31g"},
+          {b:"Sprouts chaat (1 bowl) + black chai + banana",mm:"Seasonal fruit + makhana",l:"2 phulka + rajma + green sabzi + salad",pw:"Black coffee + banana",po:"Sattu sharbat",d:"2 phulka + palak dal (no paneer) + dahi",cal:"1490 kcal",p:"55g",c:"200g",f:"32g"}
+        ],
+        200: [
+          {b:"Paneer paratha (1 small) + dahi + green tea",mm:"Mixed fruits + 10 badam",l:"2 phulka + paneer sabzi (50g) + dal + salad + dahi",pw:"Banana + black coffee",po:"Milk (1 glass) + banana",d:"2 phulka + palak dal + raita + salad",cal:"1600 kcal",p:"68g",c:"195g",f:"42g"},
+          {b:"Moong dal chilla (3) + green chutney + dahi",mm:"Apple + 10 badam + green tea",l:"Brown rice + chana masala + salad + dahi (2 bowls)",pw:"Banana + green tea",po:"Paneer (50g) + sattu sharbat",d:"2 phulka + palak paneer (small) + salad",cal:"1620 kcal",p:"70g",c:"198g",f:"44g"},
+          {b:"Oats with milk + banana + 5 badam",mm:"Chhachh + roasted makhana",l:"2 phulka + rajma + baingan bhartha + salad + dahi",pw:"Banana + black coffee",po:"Milk (1 glass) + sattu",d:"2 phulka + moong dal + stir fry vegetables + raita",cal:"1580 kcal",p:"65g",c:"193g",f:"40g"},
+          {b:"Besan chilla (3) with paneer stuffing + green chutney",mm:"Mixed fruits + 10 badam",l:"Brown rice + dal fry + mixed vegetables + salad + dahi",pw:"Banana + green tea",po:"Sattu + milk",d:"2 phulka + palak paneer + salad + chhachh",cal:"1610 kcal",p:"67g",c:"196g",f:"42g"},
+          {b:"Dalia with milk + fruits + green tea",mm:"Sprouts chaat + nimbu pani",l:"2 phulka + chole (small portion) + cucumber raita + salad",pw:"Banana + black coffee",po:"Paneer (50g) + fruit",d:"2 phulka + moong dal + lauki sabzi + dahi",cal:"1590 kcal",p:"66g",c:"194g",f:"41g"},
+          {b:"Paneer bhurji (50g paneer) + 1 phulka + green tea",mm:"Apple + 10 badam + chhachh",l:"Brown rice + sambhar + salad + dahi",pw:"Banana + green tea",po:"Milk + sattu",d:"2 phulka + chana dal + vegetables + raita",cal:"1605 kcal",p:"68g",c:"197g",f:"43g"},
+          {b:"Oats chilla (2) + dahi + green tea",mm:"Mixed fruits + makhana",l:"2 phulka + paneer sabzi (50g) + dal + salad",pw:"Banana + black coffee",po:"Sattu + milk",d:"Khichdi (1 bowl) + dahi + salad",cal:"1575 kcal",p:"64g",c:"192g",f:"40g"}
+        ],
+        300: [
+          {b:"Paneer paratha (2) + dahi (2 bowls) + green tea + 10 badam",mm:"Protein smoothie (milk + banana + badam)",l:"2 phulka + paneer sabzi (100g) + dal + salad + dahi",pw:"Banana + black coffee",po:"Whey protein OR paneer (100g) + fruit",d:"2 phulka + palak paneer + dahi + salad",cal:"1750 kcal",p:"85g",c:"190g",f:"52g"},
+          {b:"Moong dal chilla (3) stuffed with paneer + green chutney + dahi",mm:"Greek yogurt + mixed fruits + akhrot",l:"Brown rice + rajma + salad + dahi (2 bowls)",pw:"Banana + green tea",po:"Whey protein OR milk + banana",d:"2 phulka + tofu bhurji + dal + salad",cal:"1780 kcal",p:"88g",c:"193g",f:"54g"},
+          {b:"Oats with milk + protein powder + banana + akhrot",mm:"Paneer (50g) + apple + green tea",l:"2 phulka + chole + raita + salad",pw:"Banana + black coffee",po:"Whey protein + banana",d:"2 phulka + palak paneer + moong dal + salad",cal:"1760 kcal",p:"86g",c:"191g",f:"53g"},
+          {b:"Besan chilla (3) + paneer filling + dahi + fruits",mm:"Protein shake + apple",l:"Brown rice + chana dal + vegetables + dahi",pw:"Banana + coffee",po:"Whey protein OR cottage cheese",d:"2 phulka + paneer bhurji (100g) + dal + salad",cal:"1770 kcal",p:"87g",c:"192g",f:"53g"},
+          {b:"Paneer bhurji (100g) + 2 phulka + green tea",mm:"Mixed fruits + akhrot + badam",l:"2 phulka + rajma + baingan bhartha + dahi + salad",pw:"Banana + black coffee",po:"Protein shake + banana",d:"2 phulka + tofu sabzi + dal + raita",cal:"1755 kcal",p:"85g",c:"190g",f:"52g"},
+          {b:"Oats + milk + banana + protein powder + badam",mm:"Paneer (50g) + fruits + green tea",l:"Brown rice + palak paneer + salad + dahi",pw:"Banana + green tea",po:"Whey protein + milk",d:"2 phulka + chana masala + raita",cal:"1765 kcal",p:"86g",c:"191g",f:"53g"},
+          {b:"Paneer paratha (2) + dahi + fruits + badam",mm:"Protein smoothie (milk + paneer + banana)",l:"2 phulka + dal makhani (small) + salad + dahi",pw:"Banana + black coffee",po:"Whey protein + banana",d:"2 phulka + palak tofu + moong dal + salad",cal:"1775 kcal",p:"87g",c:"192g",f:"54g"}
+        ]
+      },
+      nonveg: {
+        100: [
+          {b:"2 ande boiled + 1 phulka + adrak chai (no sugar)",mm:"Seasonal fruit + roasted chana",l:"2 phulka + dal + chicken (100g, curry) + salad",pw:"Banana + green tea",po:"1 boiled anda + sattu sharbat",d:"2 phulka + machli (1 piece) + dahi + salad",cal:"1500 kcal",p:"72g",c:"165g",f:"38g"},
+          {b:"3 ande ka omelette (2 whites + 1 full) + green tea",mm:"Apple + roasted chana",l:"Brown rice + chicken curry (100g) + salad + dahi",pw:"Banana + black coffee",po:"2 boiled ande",d:"2 phulka + dal + fish (1 piece) + salad",cal:"1520 kcal",p:"75g",c:"162g",f:"36g"},
+          {b:"Anda bhurji (3 ande) + 1 phulka + chai",mm:"Guava + roasted chana",l:"2 phulka + chicken keema (100g) + dal + salad",pw:"Banana + green tea",po:"Boiled anda (2)",d:"2 phulka + grilled chicken (100g) + salad + dahi",cal:"1510 kcal",p:"73g",c:"160g",f:"37g"},
+          {b:"Boiled ande (3) + poha (small bowl) + green tea",mm:"Seasonal fruit + chana",l:"Brown rice + fish curry (1 piece) + dal + salad",pw:"Banana + coffee",po:"2 ande + sattu",d:"2 phulka + chicken soup + salad",cal:"1490 kcal",p:"71g",c:"158g",f:"35g"},
+          {b:"Anda paratha (1, 2 ande stuffed) + dahi + green tea",mm:"Apple + roasted chana",l:"2 phulka + chicken curry (100g) + salad + dahi",pw:"Banana + black coffee",po:"Boiled ande (2)",d:"2 phulka + grilled fish + dal + salad",cal:"1505 kcal",p:"72g",c:"161g",f:"36g"},
+          {b:"3 ande omelette + vegetables + green tea",mm:"Guava + chana",l:"Brown rice + egg curry (2 ande) + salad + dahi",pw:"Banana + green tea",po:"2 boiled ande + sattu",d:"2 phulka + chicken tikka grilled (100g) + salad",cal:"1515 kcal",p:"74g",c:"163g",f:"37g"},
+          {b:"Boiled ande (3) + 1 phulka + chai (no sugar)",mm:"Seasonal fruit + chana",l:"2 phulka + machli curry + dal + salad + dahi",pw:"Banana + black coffee",po:"Boiled anda (2)",d:"2 phulka + chicken keema (100g) + salad",cal:"1500 kcal",p:"72g",c:"160g",f:"36g"}
+        ],
+        200: [
+          {b:"4 ande omelette + multigrain toast (2) + green tea",mm:"Apple + 10 badam",l:"2 phulka + chicken curry (150g) + salad + dahi",pw:"Banana + black coffee",po:"Protein shake OR 3 boiled ande",d:"2 phulka + grilled fish (150g) + dal + salad",cal:"1700 kcal",p:"95g",c:"175g",f:"48g"},
+          {b:"Anda bhurji (4 ande) + 2 phulka + green tea",mm:"Mixed fruits + badam",l:"Brown rice + chicken tikka masala (150g) + salad + raita",pw:"Banana + coffee",po:"Whey protein OR boiled ande (3)",d:"2 phulka + fish curry + dal + salad",cal:"1720 kcal",p:"97g",c:"178g",f:"49g"},
+          {b:"Boiled ande (4) + oats + green tea",mm:"Apple + badam",l:"2 phulka + mutton curry (100g) + dal + salad + dahi",pw:"Banana + coffee",po:"Protein shake + banana",d:"2 phulka + chicken soup + salad",cal:"1710 kcal",p:"96g",c:"176g",f:"48g"},
+          {b:"Anda paratha (2 ande) + dahi + green tea + badam",mm:"Fruits + makhana",l:"Brown rice + fish fry (2 pieces) + dal + salad",pw:"Banana + coffee",po:"Boiled ande (3) + sattu",d:"2 phulka + chicken keema + dal + raita",cal:"1715 kcal",p:"96g",c:"177g",f:"49g"},
+          {b:"4 ande omelette + vegetables + toast + green tea",mm:"Apple + badam",l:"2 phulka + chicken curry (150g) + raita + salad",pw:"Banana + black coffee",po:"Whey protein OR 3 boiled ande",d:"2 phulka + grilled fish + dal + salad",cal:"1705 kcal",p:"95g",c:"175g",f:"47g"},
+          {b:"Boiled ande (3) + poha + green tea",mm:"Mixed fruits + badam",l:"Brown rice + chicken tikka (150g) + salad + dahi",pw:"Banana + green tea",po:"Protein shake OR ande",d:"2 phulka + fish curry + dal + salad",cal:"1695 kcal",p:"94g",c:"174g",f:"47g"},
+          {b:"Anda bhurji (3) + 1 phulka + dahi + green tea",mm:"Fruits + badam",l:"2 phulka + murgh dal (chicken + dal) + salad + dahi",pw:"Banana + coffee",po:"Whey protein + banana",d:"2 phulka + grilled chicken (150g) + salad",cal:"1700 kcal",p:"95g",c:"175g",f:"48g"}
+        ],
+        300: [
+          {b:"4 ande omelette + 2 phulka + protein shake + green tea",mm:"Grilled chicken breast (100g) + apple",l:"2 phulka + chicken curry (200g) + dal + salad + dahi",pw:"Banana + black coffee",po:"Whey protein shake + banana",d:"2 phulka + grilled fish (200g) + salad + dahi",cal:"1900 kcal",p:"120g",c:"185g",f:"58g"},
+          {b:"Boiled ande (4) + oats + protein shake + fruits",mm:"Grilled chicken (100g) + badam",l:"Brown rice + chicken biryani style (200g) + raita + salad",pw:"Banana + coffee",po:"Whey protein + milk",d:"2 phulka + fish tikka + dal + salad",cal:"1920 kcal",p:"122g",c:"187g",f:"59g"},
+          {b:"Anda bhurji (4) + multigrain toast + protein shake",mm:"Tuna/sardine (canned) + apple",l:"2 phulka + mutton curry (150g) + dal + salad + dahi",pw:"Banana + black coffee",po:"Whey protein + banana",d:"2 phulka + grilled chicken (200g) + stir fry veggies",cal:"1910 kcal",p:"121g",c:"186g",f:"58g"},
+          {b:"4 ande + 2 phulka + fruits + green tea",mm:"Chicken breast + badam",l:"Brown rice + fish curry (200g) + salad + dahi",pw:"Banana + coffee",po:"Whey protein + banana",d:"2 phulka + chicken tikka masala + dal + salad",cal:"1905 kcal",p:"120g",c:"185g",f:"58g"},
+          {b:"Omelette (4 ande) + protein shake + fruits",mm:"Grilled chicken + apple",l:"2 phulka + chicken curry (200g) + raita + salad",pw:"Banana + black coffee",po:"Whey protein + milk",d:"2 phulka + fish grilled (200g) + dal + salad",cal:"1915 kcal",p:"121g",c:"186g",f:"59g"},
+          {b:"Boiled ande (4) + toast + protein shake + green tea",mm:"Chicken (100g) + badam + apple",l:"Brown rice + mutton curry (150g) + dal + salad",pw:"Banana + coffee",po:"Whey protein + banana",d:"2 phulka + grilled chicken + salad + dahi",cal:"1900 kcal",p:"120g",c:"184g",f:"57g"},
+          {b:"4 ande omelette + 2 phulka + protein shake",mm:"Chicken breast (100g) + fruit",l:"2 phulka + chicken biryani (200g) + raita",pw:"Banana + black coffee",po:"Whey protein + banana",d:"2 phulka + fish curry + dal + salad",cal:"1910 kcal",p:"121g",c:"185g",f:"58g"}
+        ]
+      }
+    },
+    muscle_gain: {
+      veg: {
+        100: [
+          {b:"2 aloo paratha + dahi (2 bowls) + chai",mm:"Banana (2) + roasted chana + jaggery (small piece)",l:"Rice (1.5 cups) + rajma (1 bowl) + sabzi + dahi (2 bowls)",pw:"Banana (2) + sattu with jaggery",po:"Sattu sharbat + banana",d:"3 phulka + dal + sabzi + dahi + chhachh",cal:"2400 kcal",p:"75g",c:"340g",f:"55g"},
+          {b:"3 phulka + dal + dahi + banana",mm:"Peanut butter (2 tbsp) + bread (1 slice) + milk",l:"Rice (1.5 cups) + chole + dahi (2 bowls) + salad",pw:"Banana (2) + sattu",po:"Sattu + milk + banana",d:"3 phulka + paneer (50g) + dal + dahi",cal:"2450 kcal",p:"78g",c:"345g",f:"57g"},
+          {b:"Poha (large bowl) + banana (2) + chai",mm:"Dahi (2 bowls) + khajoor (5-6)",l:"Rice + dal + sabzi + dahi (2 bowls) + papad",pw:"Banana (2) + chana",po:"Milk (1 glass) + banana + sattu",d:"3 phulka + rajma + dahi + chhachh",cal:"2420 kcal",p:"73g",c:"342g",f:"54g"},
+          {b:"Upma (large bowl) + milk + banana (2)",mm:"Banana + peanuts (handful) + jaggery",l:"Rice (1.5 cups) + dal + aloo sabzi + dahi (2 bowls)",pw:"Banana (2) + sattu with milk",po:"Sattu sharbat + banana",d:"3 phulka + chana dal + sabzi + dahi",cal:"2430 kcal",p:"74g",c:"343g",f:"55g"},
+          {b:"3 phulka + sabzi + dahi + banana (2) + milk",mm:"Banana + roasted chana + peanut butter",l:"Rice + chole + sabzi + dahi (2 bowls)",pw:"Banana (2) + sattu",po:"Milk + banana + jaggery",d:"3 phulka + dal + paneer bhurji (50g) + dahi",cal:"2460 kcal",p:"77g",c:"347g",f:"58g"},
+          {b:"Aloo paratha (2) + dahi + chai + banana",mm:"Banana + dahi + peanuts",l:"Rice (1.5 cups) + rajma + baingan bhartha + dahi",pw:"Banana (2) + sattu",po:"Sattu + milk",d:"3 phulka + moong dal + sabzi + dahi + chhachh",cal:"2410 kcal",p:"72g",c:"341g",f:"54g"},
+          {b:"Banana (2) + dalia with milk + chai",mm:"Peanut butter sandwich + milk",l:"Rice + dal makhani (small) + sabzi + dahi (2 bowls)",pw:"Banana (2) + chana",po:"Sattu + milk + banana",d:"3 phulka + rajma + paneer (50g) + dahi",cal:"2440 kcal",p:"76g",c:"344g",f:"56g"}
+        ],
+        200: [
+          {b:"Paneer paratha (2) + dahi (2 bowls) + milk (1 glass)",mm:"Banana (2) + protein shake OR milk + badam",l:"Rice (1.5 cups) + rajma + paneer sabzi (100g) + dahi",pw:"Banana (2) + oats with honey",po:"Whey protein OR milk + banana (2)",d:"3 phulka + paneer bhurji (100g) + dal + dahi",cal:"2700 kcal",p:"105g",c:"330g",f:"75g"},
+          {b:"Besan chilla (4) with paneer + dahi + milk",mm:"Banana (2) + badam + milk",l:"Brown rice + chole + paneer matar (100g) + dahi (2 bowls)",pw:"Banana + oats",po:"Whey protein + banana",d:"3 phulka + palak paneer (100g) + dal + dahi",cal:"2720 kcal",p:"108g",c:"333g",f:"77g"},
+          {b:"Oats with milk + banana (2) + 10 badam + dahi",mm:"Protein shake + fruits",l:"Rice + dal + paneer sabzi (100g) + dahi (2 bowls)",pw:"Banana (2) + peanut butter",po:"Milk (2 glasses) + banana",d:"3 phulka + chana masala + paneer + dahi",cal:"2680 kcal",p:"102g",c:"328g",f:"73g"},
+          {b:"4 moong dal chilla + paneer stuffed + dahi",mm:"Banana + milk + badam",l:"Rice (1.5 cups) + rajma + mixed sabzi + dahi (2 bowls)",pw:"Banana (2) + oats",po:"Whey protein + banana + milk",d:"3 phulka + paneer bhurji + moong dal + dahi",cal:"2710 kcal",p:"106g",c:"331g",f:"76g"},
+          {b:"Paneer paratha (2) + dahi + fruits + milk",mm:"Banana (2) + protein shake",l:"Brown rice + chole + paneer sabzi + dahi",pw:"Banana + peanut butter toast",po:"Whey protein + banana",d:"3 phulka + palak paneer + dal + dahi",cal:"2690 kcal",p:"103g",c:"329g",f:"74g"},
+          {b:"Oats pancakes (besan+oats, 4) + dahi + milk",mm:"Banana (2) + badam + dahi",l:"Rice + paneer butter masala (100g) + dal + dahi",pw:"Banana + oats",po:"Milk (2 glasses) + banana (2)",d:"3 phulka + chana paneer + dahi",cal:"2700 kcal",p:"105g",c:"330g",f:"75g"},
+          {b:"4 phulka + sabzi + paneer (100g) + dahi + milk",mm:"Banana (2) + protein smoothie",l:"Rice (1.5 cups) + dal makhani + paneer matar + dahi",pw:"Banana + honey + oats",po:"Whey protein + banana",d:"3 phulka + rajma + paneer bhurji + dahi",cal:"2730 kcal",p:"109g",c:"334g",f:"77g"}
+        ],
+        300: [
+          {b:"Paneer paratha (3) + dahi (2 bowls) + protein shake + milk",mm:"Banana (2) + whey protein + badam (15)",l:"Rice (2 cups) + dal makhani + paneer (150g) + dahi",pw:"Banana (2) + oats + honey + milk",po:"Whey protein + banana + milk",d:"4 phulka + paneer bhurji (150g) + dal + dahi",cal:"3100 kcal",p:"140g",c:"370g",f:"95g"},
+          {b:"6 moong dal chilla stuffed paneer + dahi + protein shake",mm:"Banana (2) + whey + badam",l:"Rice + rajma + paneer sabzi (150g) + dahi (2 bowls)",pw:"Banana (2) + oats + protein",po:"Whey protein + milk (2 glasses)",d:"4 phulka + palak paneer (150g) + dal + dahi",cal:"3150 kcal",p:"143g",c:"375g",f:"97g"},
+          {b:"Oats + milk + protein powder + banana (2) + badam",mm:"Paneer (100g) + fruits + protein shake",l:"Rice (2 cups) + chole + paneer (150g) + dahi",pw:"Banana (2) + peanut butter + milk",po:"Whey protein + banana",d:"4 phulka + paneer bhurji + rajma + dahi",cal:"3120 kcal",p:"141g",c:"372g",f:"96g"},
+          {b:"4 phulka + paneer bhurji (150g) + dahi + protein shake",mm:"Banana (2) + whey + milk",l:"Rice + dal + paneer matar (150g) + dahi (2 bowls)",pw:"Banana (2) + oats + honey",po:"Whey protein + milk",d:"4 phulka + palak paneer + moong dal + dahi",cal:"3130 kcal",p:"142g",c:"373g",f:"96g"},
+          {b:"Paneer paratha (3) + dahi + protein shake + fruits",mm:"Whey protein + banana (2) + badam",l:"Rice + dal makhani + tofu stir fry (200g) + dahi",pw:"Banana (2) + oats",po:"Whey + banana + milk",d:"4 phulka + chana paneer masala + dahi",cal:"3140 kcal",p:"142g",c:"374g",f:"97g"},
+          {b:"Oats + protein powder + dahi + banana (2) + badam",mm:"Paneer (100g) + apple + protein shake",l:"Rice (2 cups) + rajma + paneer (150g) + dahi",pw:"Banana (2) + peanut butter + milk",po:"Whey protein + banana",d:"4 phulka + paneer bhurji + dal + dahi",cal:"3120 kcal",p:"141g",c:"372g",f:"95g"},
+          {b:"6 chilla stuffed paneer + dahi + protein shake",mm:"Banana (2) + whey + badam (15)",l:"Rice + dal + paneer (150g) + dahi + salad",pw:"Banana (2) + oats + honey",po:"Whey + milk (2 glasses)",d:"4 phulka + palak paneer (150g) + rajma + dahi",cal:"3160 kcal",p:"144g",c:"376g",f:"98g"}
+        ]
+      },
+      nonveg: {
+        100: [
+          {b:"3 ande bhurji + 2 phulka + chai + banana (2)",mm:"Banana (2) + roasted chana + jaggery",l:"Rice (1.5 cups) + chicken curry (150g) + dal + dahi",pw:"Banana (2) + sattu",po:"3 boiled ande + banana",d:"3 phulka + chicken keema (150g) + dahi",cal:"2600 kcal",p:"120g",c:"300g",f:"65g"},
+          {b:"4 ande omelette + 2 phulka + chai + banana",mm:"Banana (2) + peanuts + jaggery",l:"Rice + fish curry (2 pieces) + dal + dahi",pw:"Banana (2) + sattu + jaggery",po:"3 boiled ande",d:"3 phulka + chicken dal (150g chicken) + dahi",cal:"2650 kcal",p:"125g",c:"305g",f:"67g"},
+          {b:"Boiled ande (4) + poha (large) + chai + banana",mm:"Banana (2) + chana + peanut butter",l:"Rice + mutton curry (150g) + dal + dahi",pw:"Banana (2) + sattu",po:"3 ande boiled + banana",d:"3 phulka + chicken kofta + dal + dahi",cal:"2620 kcal",p:"118g",c:"298g",f:"64g"},
+          {b:"Anda paratha (3 ande) + dahi + chai + banana (2)",mm:"Banana + milk + peanuts",l:"Rice (1.5 cups) + chicken curry (150g) + sabzi + dahi",pw:"Banana (2) + sattu",po:"3 boiled ande + banana",d:"3 phulka + fish curry (2 pieces) + dal + dahi",cal:"2640 kcal",p:"122g",c:"302g",f:"66g"},
+          {b:"4 ande omelette + 2 phulka + banana (2) + chai",mm:"Banana + roasted chana + jaggery",l:"Rice + chicken biryani style (150g) + raita",pw:"Banana (2) + sattu",po:"3 boiled ande",d:"3 phulka + chicken dal + sabzi + dahi",cal:"2610 kcal",p:"119g",c:"299g",f:"64g"},
+          {b:"Boiled ande (3) + upma + milk + banana",mm:"Banana (2) + peanut butter + milk",l:"Rice + fish fry (2) + dal + dahi (2 bowls)",pw:"Banana (2) + sattu + jaggery",po:"3 ande + banana",d:"3 phulka + chicken keema (150g) + dahi",cal:"2630 kcal",p:"120g",c:"300g",f:"65g"},
+          {b:"3 ande bhurji + 2 phulka + chai + banana (2)",mm:"Banana + peanuts + chana",l:"Rice (1.5 cups) + mutton curry (150g) + dal + dahi",pw:"Banana (2) + sattu",po:"3 boiled ande",d:"3 phulka + chicken curry (150g) + dahi + chhachh",cal:"2620 kcal",p:"121g",c:"301g",f:"65g"}
+        ],
+        200: [
+          {b:"4 ande omelette + 2 phulka + protein shake + milk",mm:"Banana (2) + chicken breast (100g) + badam",l:"Rice (1.5 cups) + chicken curry (200g) + dal + dahi",pw:"Banana (2) + oats + honey",po:"Whey protein + banana (2)",d:"3 phulka + grilled chicken (200g) + dal + dahi",cal:"2900 kcal",p:"150g",c:"310g",f:"80g"},
+          {b:"Boiled ande (5) + toast + protein shake + fruits",mm:"Chicken (100g) + banana + badam",l:"Rice + mutton curry (200g) + dal + dahi (2 bowls)",pw:"Banana (2) + oats",po:"Whey + banana",d:"3 phulka + fish curry (2 pieces) + chicken + dahi",cal:"2950 kcal",p:"155g",c:"315g",f:"82g"},
+          {b:"Anda bhurji (4) + 2 phulka + milk + fruits",mm:"Chicken breast (100g) + apple + badam",l:"Rice + chicken tikka masala (200g) + raita + salad",pw:"Banana (2) + protein shake",po:"Whey + banana + milk",d:"3 phulka + grilled fish (200g) + dal + dahi",cal:"2920 kcal",p:"152g",c:"312g",f:"81g"},
+          {b:"4 ande omelette + toast + protein shake + banana",mm:"Grilled chicken (100g) + fruits",l:"Rice (1.5 cups) + fish curry (2 pieces) + chicken + dahi",pw:"Banana (2) + oats",po:"Whey protein + banana (2)",d:"3 phulka + chicken keema (200g) + dal + dahi",cal:"2930 kcal",p:"153g",c:"313g",f:"81g"},
+          {b:"5 ande boiled + 2 phulka + protein shake + milk",mm:"Chicken (100g) + banana + badam",l:"Rice + chicken biryani (200g) + raita",pw:"Banana (2) + oats + honey",po:"Whey + banana",d:"3 phulka + fish tikka + dal + dahi",cal:"2940 kcal",p:"154g",c:"314g",f:"82g"},
+          {b:"Anda paratha (4 ande) + dahi + protein shake",mm:"Grilled chicken (100g) + apple",l:"Rice (1.5 cups) + mutton curry (200g) + dal + dahi",pw:"Banana (2) + oats",po:"Whey protein + milk + banana",d:"3 phulka + chicken curry (200g) + dahi",cal:"2910 kcal",p:"151g",c:"311g",f:"80g"},
+          {b:"4 ande omelette + oats + protein shake + fruits",mm:"Chicken (100g) + banana + badam",l:"Rice + chicken curry (200g) + dal + dahi (2 bowls)",pw:"Banana (2) + peanut butter",po:"Whey + banana (2)",d:"3 phulka + grilled chicken + fish + dahi",cal:"2920 kcal",p:"152g",c:"312g",f:"81g"}
+        ],
+        300: [
+          {b:"5 ande omelette + 2 phulka + whey + milk + banana",mm:"Chicken (150g grilled) + banana + badam (15)",l:"Rice (2 cups) + chicken biryani (250g) + raita + salad",pw:"Banana (2) + oats + whey",po:"Whey protein (2 scoops) + milk + banana",d:"3 phulka + grilled chicken (250g) + fish + dal",cal:"3300 kcal",p:"175g",c:"355g",f:"100g"},
+          {b:"6 ande bhurji + toast + whey + milk",mm:"Chicken breast (150g) + whey + fruits",l:"Rice + mutton curry (250g) + dal + dahi",pw:"Banana (2) + oats + whey",po:"Whey + milk + banana (2)",d:"3 phulka + chicken (250g) + dal + dahi",cal:"3350 kcal",p:"178g",c:"358g",f:"102g"},
+          {b:"5 ande + oats + whey + milk + fruits",mm:"Grilled chicken (150g) + badam + banana",l:"Rice (2 cups) + chicken curry (250g) + dal + dahi",pw:"Banana (2) + peanut butter + milk",po:"Whey protein + banana + milk",d:"3 phulka + fish (200g) + chicken (100g) + dahi",cal:"3320 kcal",p:"176g",c:"356g",f:"101g"},
+          {b:"6 ande omelette + 2 phulka + whey + banana",mm:"Chicken (150g) + apple + badam",l:"Rice + chicken biryani (250g) + raita",pw:"Banana (2) + oats + honey + whey",po:"Whey + milk (2 glasses)",d:"3 phulka + grilled chicken (250g) + dal + dahi",cal:"3330 kcal",p:"177g",c:"357g",f:"101g"},
+          {b:"5 ande + toast + whey + milk + fruits",mm:"Grilled chicken (150g) + banana + whey",l:"Rice (2 cups) + mutton curry (250g) + dal + dahi",pw:"Banana (2) + oats + milk",po:"Whey protein + banana",d:"3 phulka + chicken keema (250g) + fish + dahi",cal:"3340 kcal",p:"177g",c:"357g",f:"102g"},
+          {b:"6 ande bhurji + 2 phulka + whey + milk",mm:"Chicken (150g) + badam + banana",l:"Rice + chicken tikka masala (250g) + raita + salad",pw:"Banana (2) + oats + honey",po:"Whey + milk + banana (2)",d:"3 phulka + grilled fish (200g) + chicken (100g) + dahi",cal:"3310 kcal",p:"175g",c:"355g",f:"100g"},
+          {b:"5 ande + oats + whey + fruits + milk",mm:"Grilled chicken breast (150g) + whey",l:"Rice (2 cups) + chicken curry (250g) + mutton + dahi",pw:"Banana (2) + peanut butter + milk",po:"Whey protein (2 scoops) + banana",d:"3 phulka + chicken (250g) + dal makhani + dahi",cal:"3360 kcal",p:"179g",c:"359g",f:"103g"}
+        ]
+      }
+    },
+    maintain: {
+      veg: {
+        100: [
+          {b:"Poha (1 bowl) + chai + banana",mm:"Seasonal fruit + roasted chana",l:"2 phulka + dal + sabzi + dahi + salad",pw:"Green tea + light snack",po:"Chhachh or milk",d:"2 phulka + dal + sabzi + dahi",cal:"1800 kcal",p:"60g",c:"250g",f:"45g"},
+          {b:"Upma + chai + fruit",mm:"Chhachh + makhana",l:"Rice + dal + sabzi + dahi",pw:"Chai + banana",po:"Milk (1 glass)",d:"2 phulka + sabzi + dal + dahi",cal:"1820 kcal",p:"58g",c:"252g",f:"46g"},
+          {b:"2 phulka + sabzi + dahi + chai",mm:"Fruit + nuts",l:"Rice + rajma + salad + dahi",pw:"Green tea + chana",po:"Sattu or milk",d:"2 phulka + dal + sabzi + raita",cal:"1810 kcal",p:"59g",c:"251g",f:"45g"},
+          {b:"Dalia + milk + fruit + chai",mm:"Roasted chana + chhachh",l:"2 phulka + chole (small) + salad + dahi",pw:"Chai + banana",po:"Milk + banana",d:"2 phulka + moong dal + sabzi + dahi",cal:"1800 kcal",p:"57g",c:"250g",f:"44g"},
+          {b:"Idli (2-3) + sambar + green tea",mm:"Fruit + peanuts",l:"Rice + dal + sabzi + dahi + salad",pw:"Green tea + makhana",po:"Chhachh",d:"2 phulka + rajma + sabzi + dahi",cal:"1815 kcal",p:"59g",c:"252g",f:"45g"},
+          {b:"Poha + chai + banana",mm:"Seasonal fruit + nuts",l:"Rice + chole + salad + dahi",pw:"Chai + chana",po:"Milk (1 glass)",d:"2 phulka + dal + sabzi + raita",cal:"1805 kcal",p:"58g",c:"251g",f:"45g"},
+          {b:"2 phulka + paneer bhurji (50g) + chai",mm:"Fruit + makhana + chhachh",l:"Rice + dal + sabzi + dahi",pw:"Green tea + banana",po:"Sattu sharbat",d:"2 phulka + dal + mixed sabzi + dahi",cal:"1820 kcal",p:"62g",c:"252g",f:"46g"}
+        ],
+        200:[
+          {b:"Paneer paratha (1) + dahi + chai",mm:"Mixed fruits + badam",l:"2 phulka + paneer sabzi (75g) + dal + dahi",pw:"Green tea + banana",po:"Milk + banana",d:"2 phulka + dal + sabzi + raita",cal:"1950 kcal",p:"70g",c:"255g",f:"55g"},
+          {b:"Moong dal chilla (2) + dahi + chai",mm:"Apple + badam",l:"Rice + chana masala + salad + dahi",pw:"Chai + banana",po:"Paneer (50g) + fruit",d:"2 phulka + palak dal + raita",cal:"1960 kcal",p:"72g",c:"257g",f:"56g"},
+          {b:"Oats with milk + banana + chai",mm:"Chhachh + makhana",l:"2 phulka + rajma + sabzi + dahi",pw:"Green tea + chana",po:"Milk + banana",d:"2 phulka + paneer bhurji (75g) + dal",cal:"1940 kcal",p:"68g",c:"253g",f:"54g"},
+          {b:"Upma + dahi + chai + fruit",mm:"Mixed fruits + nuts",l:"Rice + dal + paneer sabzi (75g) + dahi",pw:"Chai + banana",po:"Milk (1 glass) + banana",d:"2 phulka + chole (small) + raita",cal:"1955 kcal",p:"71g",c:"256g",f:"55g"},
+          {b:"Besan chilla (2) + dahi + chai",mm:"Apple + badam + chhachh",l:"2 phulka + dal makhani (small) + salad + dahi",pw:"Green tea + banana",po:"Paneer (50g) + milk",d:"2 phulka + moong dal + sabzi + dahi",cal:"1945 kcal",p:"69g",c:"254g",f:"54g"},
+          {b:"Dalia + milk + fruits + chai",mm:"Makhana + chhachh",l:"Rice + rajma + paneer (75g) + dahi",pw:"Chai + banana",po:"Milk + banana",d:"2 phulka + palak paneer (75g) + dal",cal:"1960 kcal",p:"72g",c:"257g",f:"56g"},
+          {b:"Paneer paratha (1) + dahi + chai + fruit",mm:"Mixed fruits + nuts + badam",l:"2 phulka + chole + salad + dahi",pw:"Green tea + banana",po:"Paneer (50g) + milk",d:"2 phulka + dal + sabzi + raita",cal:"1950 kcal",p:"70g",c:"255g",f:"55g"}
+        ],
+        300:[
+          {b:"Paneer paratha (2) + dahi + chai + badam",mm:"Protein smoothie + fruits",l:"2 phulka + paneer (100g) + dal + dahi",pw:"Banana + green tea",po:"Whey OR paneer + milk",d:"2 phulka + palak paneer (100g) + dahi",cal:"2100 kcal",p:"85g",c:"260g",f:"65g"},
+          {b:"Moong dal chilla (3) + paneer + dahi + chai",mm:"Mixed fruits + badam + protein shake",l:"Rice + paneer matar (100g) + dal + dahi",pw:"Banana + coffee",po:"Whey protein + banana",d:"2 phulka + chana masala + paneer + dahi",cal:"2120 kcal",p:"87g",c:"262g",f:"66g"},
+          {b:"Oats + milk + protein powder + banana + badam",mm:"Paneer (100g) + apple",l:"2 phulka + dal + paneer bhurji (100g) + dahi",pw:"Banana + green tea",po:"Protein shake + banana",d:"2 phulka + rajma + paneer + dahi",cal:"2110 kcal",p:"86g",c:"261g",f:"65g"},
+          {b:"4 chilla stuffed paneer + dahi + chai",mm:"Protein smoothie + fruits",l:"Rice + paneer sabzi (100g) + chole + dahi",pw:"Banana + coffee",po:"Whey + banana + milk",d:"2 phulka + palak paneer (100g) + moong dal",cal:"2115 kcal",p:"86g",c:"261g",f:"66g"},
+          {b:"Paneer paratha (2) + dahi + chai + fruits",mm:"Protein shake + badam",l:"2 phulka + dal makhani + paneer (100g) + dahi",pw:"Banana + green tea",po:"Whey OR paneer + milk",d:"2 phulka + tofu stir fry + dal + dahi",cal:"2105 kcal",p:"85g",c:"260g",f:"65g"},
+          {b:"Oats + milk + protein + fruits + badam",mm:"Paneer (100g) + mixed fruits",l:"Rice + chana masala + paneer (100g) + dahi",pw:"Banana + coffee",po:"Protein shake + banana",d:"2 phulka + paneer bhurji (100g) + dal + dahi",cal:"2120 kcal",p:"87g",c:"262g",f:"66g"},
+          {b:"Besan chilla (3) + paneer filling + dahi + chai",mm:"Protein smoothie",l:"2 phulka + rajma + paneer (100g) + dahi",pw:"Banana + green tea",po:"Whey + banana + milk",d:"2 phulka + palak paneer (100g) + dal",cal:"2110 kcal",p:"86g",c:"261g",f:"65g"}
+        ]
+      },
+      nonveg:{
+        100:[
+          {b:"2 ande + poha + chai",mm:"Fruit + chana",l:"Rice + chicken curry (100g) + dal + dahi",pw:"Chai + banana",po:"1 boiled anda",d:"2 phulka + fish (1 piece) + dal + dahi",cal:"1900 kcal",p:"80g",c:"240g",f:"48g"},
+          {b:"3 ande bhurji + 1 phulka + chai",mm:"Apple + chana",l:"2 phulka + chicken (100g) + sabzi + dahi",pw:"Banana + chai",po:"2 boiled ande",d:"2 phulka + dal + machli + salad",cal:"1920 kcal",p:"82g",c:"242g",f:"49g"},
+          {b:"2 ande boiled + upma + chai",mm:"Fruit + peanuts",l:"Rice + fish curry (1 piece) + dal + dahi",pw:"Chai + banana",po:"1 boiled anda + sattu",d:"2 phulka + chicken (100g) + sabzi + dahi",cal:"1910 kcal",p:"81g",c:"241g",f:"48g"},
+          {b:"Anda paratha (2 ande) + dahi + chai",mm:"Fruit + chana",l:"2 phulka + chicken curry (100g) + sabzi + dahi",pw:"Banana + chai",po:"2 boiled ande",d:"2 phulka + machli + dal + dahi",cal:"1905 kcal",p:"80g",c:"240g",f:"48g"},
+          {b:"3 ande omelette + 1 phulka + chai",mm:"Apple + roasted chana",l:"Rice + egg curry (2 ande) + dal + dahi",pw:"Chai + banana",po:"1-2 boiled ande",d:"2 phulka + chicken tikka (100g) + salad",cal:"1915 kcal",p:"81g",c:"241g",f:"48g"},
+          {b:"2 ande boiled + poha (small) + chai",mm:"Fruit + peanuts",l:"2 phulka + chicken (100g) + dal + dahi",pw:"Banana + chai",po:"Boiled anda + sattu",d:"2 phulka + fish curry (1 piece) + sabzi",cal:"1900 kcal",p:"80g",c:"240g",f:"47g"},
+          {b:"Anda bhurji (2) + 1 phulka + chai + fruit",mm:"Chana + seasonal fruit",l:"Rice + chicken curry (100g) + sabzi + dahi",pw:"Banana + chai",po:"2 boiled ande",d:"2 phulka + dal + fish + salad",cal:"1910 kcal",p:"80g",c:"241g",f:"48g"}
+        ],
+        200:[
+          {b:"3 ande + 2 phulka + chai + badam",mm:"Apple + badam",l:"Rice + chicken (150g) + dal + dahi",pw:"Banana + coffee",po:"Protein shake OR 2 ande",d:"2 phulka + fish (150g) + dal + dahi",cal:"2050 kcal",p:"95g",c:"245g",f:"58g"},
+          {b:"4 ande omelette + toast + chai",mm:"Mixed fruits + badam",l:"2 phulka + chicken curry (150g) + sabzi + dahi",pw:"Banana + coffee",po:"2-3 boiled ande",d:"2 phulka + grilled fish (150g) + dal",cal:"2070 kcal",p:"97g",c:"247g",f:"59g"},
+          {b:"3 ande + upma + chai + fruit",mm:"Apple + badam + chhachh",l:"Rice + fish fry (2 pieces) + dal + dahi",pw:"Banana + tea",po:"Protein shake OR ande",d:"2 phulka + chicken curry (150g) + dahi",cal:"2055 kcal",p:"95g",c:"246g",f:"58g"},
+          {b:"4 ande bhurji + 1 phulka + chai",mm:"Fruits + badam",l:"Rice + chicken biryani style (150g) + raita",pw:"Banana + coffee",po:"Boiled ande (2) + sattu",d:"2 phulka + fish curry + dal + dahi",cal:"2060 kcal",p:"96g",c:"246g",f:"58g"},
+          {b:"3 ande + poha + chai + banana",mm:"Apple + badam",l:"2 phulka + chicken (150g) + sabzi + dahi",pw:"Banana + tea",po:"Protein shake + banana",d:"2 phulka + grilled chicken (150g) + dal",cal:"2050 kcal",p:"95g",c:"245g",f:"57g"},
+          {b:"4 ande omelette + toast + chai",mm:"Fruits + badam + chhachh",l:"Rice + mutton curry (100g) + dal + dahi",pw:"Banana + coffee",po:"2-3 boiled ande",d:"2 phulka + fish (150g) + sabzi + dahi",cal:"2065 kcal",p:"96g",c:"246g",f:"58g"},
+          {b:"3 ande + 1 phulka + dahi + chai",mm:"Mixed fruits + badam",l:"Rice + chicken tikka masala (150g) + salad",pw:"Banana + coffee",po:"Protein shake OR ande",d:"2 phulka + fish curry + dal + dahi",cal:"2055 kcal",p:"95g",c:"246g",f:"58g"}
+        ],
+        300:[
+          {b:"4 ande + 2 phulka + protein shake + fruits",mm:"Chicken (150g) + badam + apple",l:"Rice + chicken curry (200g) + dal + dahi",pw:"Banana + coffee",po:"Whey protein + banana",d:"2 phulka + grilled fish (200g) + dal + dahi",cal:"2250 kcal",p:"115g",c:"255g",f:"68g"},
+          {b:"5 ande omelette + toast + protein shake",mm:"Grilled chicken (150g) + fruits",l:"Rice + mutton curry (200g) + dal + dahi",pw:"Banana + coffee",po:"Whey + banana",d:"2 phulka + chicken tikka (200g) + salad",cal:"2280 kcal",p:"118g",c:"258g",f:"70g"},
+          {b:"4 ande + oats + whey + milk",mm:"Chicken (150g) + apple + badam",l:"Rice + fish (2 pieces) + chicken (100g) + dahi",pw:"Banana + protein shake",po:"Whey + banana + milk",d:"2 phulka + chicken curry (200g) + dal",cal:"2260 kcal",p:"116g",c:"256g",f:"69g"},
+          {b:"5 ande bhurji + 2 phulka + protein shake",mm:"Grilled chicken (150g) + fruits",l:"Rice + chicken biryani (200g) + raita",pw:"Banana + coffee",po:"Whey protein + banana",d:"2 phulka + fish (200g) + dal + dahi",cal:"2270 kcal",p:"117g",c:"257g",f:"69g"},
+          {b:"4 ande + toast + whey + fruits",mm:"Chicken (150g) + badam",l:"Rice + mutton curry (200g) + dal + dahi",pw:"Banana + protein shake",po:"Whey + banana + milk",d:"2 phulka + grilled chicken (200g) + salad",cal:"2255 kcal",p:"115g",c:"255g",f:"68g"},
+          {b:"5 ande omelette + oats + protein shake",mm:"Grilled chicken (150g) + apple",l:"Rice + chicken tikka (200g) + salad + dahi",pw:"Banana + coffee",po:"Whey + banana",d:"2 phulka + fish curry (200g) + dal + dahi",cal:"2275 kcal",p:"117g",c:"257g",f:"70g"},
+          {b:"4 ande + 2 phulka + whey + milk + fruits",mm:"Chicken (150g) + badam + banana",l:"Rice + chicken curry (200g) + fish + dahi",pw:"Banana + protein shake",po:"Whey protein + milk + banana",d:"2 phulka + grilled chicken (200g) + dal",cal:"2265 kcal",p:"116g",c:"256g",f:"69g"}
+        ]
+      }
+    },
+    endurance:{
+      veg:{
+        100:[
+          {b:"Banana porridge (oats+banana+jaggery) + chai",mm:"Banana (2) + khajoor (5)",l:"Rice (1.5 cups) + dal + sabzi + dahi",pw:"Banana (2) + jaggery + water",po:"Sattu sharbat + banana",d:"3 phulka + dal + sabzi + dahi + chhachh",cal:"2200 kcal",p:"65g",c:"330g",f:"48g"},
+          {b:"Banana (2) + dalia + milk + chai",mm:"Dates (6-7) + seasonal fruit",l:"Rice + chole + salad + dahi",pw:"Banana (2) + coconut water",po:"Sattu + banana",d:"3 phulka + rajma + sabzi + dahi",cal:"2220 kcal",p:"63g",c:"332g",f:"49g"},
+          {b:"Poha (large bowl) + banana (2) + chai",mm:"Khajoor (6) + makhana",l:"Rice (1.5 cups) + dal + sabzi + dahi",pw:"Banana (2) + water + jaggery",po:"Sattu sharbat",d:"3 phulka + moong dal + sabzi + chhachh",cal:"2210 kcal",p:"62g",c:"331g",f:"48g"},
+          {b:"3 phulka + sabzi + dahi + banana (2) + chai",mm:"Banana + khajoor + coconut water",l:"Rice + rajma + sabzi + dahi",pw:"Banana (2) + jaggery",po:"Sattu + milk",d:"3 phulka + dal + green sabzi + dahi",cal:"2200 kcal",p:"62g",c:"330g",f:"47g"},
+          {b:"Banana bread (homemade) + milk + chai",mm:"Dates + seasonal fruit",l:"Rice (1.5 cups) + chole + salad + dahi",pw:"Banana (2) + coconut water",po:"Sattu sharbat + banana",d:"3 phulka + dal + aloo sabzi + dahi",cal:"2215 kcal",p:"63g",c:"331g",f:"48g"},
+          {b:"Upma (large) + banana (2) + milk",mm:"Khajoor (6) + makhana",l:"Rice + dal + mixed sabzi + dahi",pw:"Banana (2) + water + jaggery",po:"Sattu + banana",d:"3 phulka + rajma + sabzi + chhachh",cal:"2205 kcal",p:"62g",c:"330g",f:"48g"},
+          {b:"Banana (2) + oats + milk + chai + jaggery",mm:"Dates + coconut water",l:"Rice (1.5 cups) + dal + sabzi + dahi",pw:"Banana (2) + jaggery",po:"Sattu sharbat",d:"3 phulka + chana dal + sabzi + dahi",cal:"2220 kcal",p:"64g",c:"333g",f:"49g"}
+        ],
+        200:[
+          {b:"Banana (2) + oats + milk + dahi + chai",mm:"Banana + energy bar/dates + badam",l:"Rice (1.5 cups) + chole + paneer (50g) + dahi",pw:"Banana (2) + sports drink (homemade: water+sugar+salt)",po:"Whey OR sattu + banana + milk",d:"3 phulka + dal + paneer (50g) + dahi",cal:"2500 kcal",p:"80g",c:"345g",f:"60g"},
+          {b:"Banana paratha (2) + dahi + milk + chai",mm:"Dates (6) + badam + banana",l:"Rice + rajma + paneer (50g) + dahi",pw:"Banana (2) + coconut water + dates",po:"Sattu + milk + banana",d:"3 phulka + dal makhani (small) + sabzi + dahi",cal:"2520 kcal",p:"82g",c:"347g",f:"61g"},
+          {b:"3 phulka + paneer (50g) + dahi + banana + chai",mm:"Banana (2) + badam + dates",l:"Rice (1.5 cups) + chole + sabzi + dahi",pw:"Banana + sports drink",po:"Whey OR milk + banana",d:"3 phulka + paneer bhurji (50g) + dal + dahi",cal:"2510 kcal",p:"81g",c:"346g",f:"60g"},
+          {b:"Oats + milk + banana (2) + dahi + chai",mm:"Dates + makhana + badam",l:"Rice + paneer matar (50g) + dal + dahi",pw:"Banana (2) + coconut water",po:"Sattu + milk + banana",d:"3 phulka + chana dal + paneer + dahi",cal:"2505 kcal",p:"80g",c:"345g",f:"60g"},
+          {b:"Banana (2) + dalia + milk + dahi + chai",mm:"Dates (6) + badam + banana",l:"Rice (1.5 cups) + rajma + paneer (50g) + dahi",pw:"Banana + sports drink",po:"Whey OR sattu + banana",d:"3 phulka + dal + sabzi + paneer + dahi",cal:"2515 kcal",p:"81g",c:"346g",f:"61g"},
+          {b:"3 phulka + sabzi + paneer (50g) + dahi + banana",mm:"Banana + dates + badam",l:"Rice + chole + salad + dahi",pw:"Banana (2) + coconut water + jaggery",po:"Milk (2 glasses) + banana",d:"3 phulka + paneer dal + sabzi + dahi",cal:"2500 kcal",p:"80g",c:"345g",f:"60g"},
+          {b:"Oats + banana (2) + dahi + milk + chai",mm:"Dates + makhana + badam",l:"Rice (1.5 cups) + dal + paneer (50g) + dahi",pw:"Banana (2) + sports drink",po:"Sattu + milk + banana",d:"3 phulka + chole + paneer + dahi",cal:"2510 kcal",p:"81g",c:"346g",f:"60g"}
+        ],
+        300:[
+          {b:"Banana (2) + oats + milk + protein powder + dahi",mm:"Banana + whey protein + badam",l:"Rice (2 cups) + chole + paneer (100g) + dahi",pw:"Banana (2) + energy drink (homemade)",po:"Whey protein + banana + milk",d:"3 phulka + palak paneer (100g) + dal + dahi",cal:"2800 kcal",p:"100g",c:"365g",f:"72g"},
+          {b:"Banana paratha (2) + paneer (100g) + dahi + milk",mm:"Whey + banana + dates + badam",l:"Rice + dal makhani + paneer (100g) + dahi",pw:"Banana (2) + sports drink + dates",po:"Whey protein + milk + banana",d:"3 phulka + chana paneer + dahi",cal:"2830 kcal",p:"103g",c:"368g",f:"74g"},
+          {b:"Oats + protein powder + milk + banana (2) + badam",mm:"Paneer (100g) + fruits + whey",l:"Rice (2 cups) + rajma + paneer (100g) + dahi",pw:"Banana (2) + coconut water + dates",po:"Whey + banana + milk",d:"3 phulka + paneer bhurji (100g) + dal + dahi",cal:"2810 kcal",p:"101g",c:"366g",f:"73g"},
+          {b:"3 phulka + paneer (100g) + dahi + banana (2) + milk",mm:"Whey protein + banana + badam",l:"Rice + chole + paneer matar (100g) + dahi",pw:"Banana (2) + energy drink",po:"Protein shake + banana",d:"3 phulka + palak paneer + rajma + dahi",cal:"2820 kcal",p:"102g",c:"367g",f:"73g"},
+          {b:"Banana (2) + dalia + protein powder + dahi + milk",mm:"Whey + dates + badam + banana",l:"Rice (2 cups) + dal + paneer (100g) + dahi",pw:"Banana (2) + sports drink",po:"Whey + banana + milk",d:"3 phulka + paneer bhurji + chole + dahi",cal:"2805 kcal",p:"100g",c:"365g",f:"72g"},
+          {b:"Oats + milk + whey + banana (2) + dahi",mm:"Paneer (100g) + banana + badam",l:"Rice + paneer matar (100g) + dal + dahi",pw:"Banana (2) + coconut water + dates",po:"Protein shake + banana + milk",d:"3 phulka + dal makhani (small) + paneer + dahi",cal:"2815 kcal",p:"101g",c:"366g",f:"73g"},
+          {b:"Banana paratha (2) + paneer + dahi + milk + whey",mm:"Whey protein + banana (2) + badam",l:"Rice (2 cups) + chole + paneer (100g) + dahi",pw:"Banana (2) + sports drink + dates",po:"Whey + milk + banana",d:"3 phulka + palak paneer (100g) + chana + dahi",cal:"2835 kcal",p:"103g",c:"369g",f:"75g"}
+        ]
+      },
+      nonveg:{
+        100:[
+          {b:"2 ande + banana porridge (oats+banana) + chai",mm:"Banana (2) + khajoor (5)",l:"Rice (1.5 cups) + chicken (100g) + dal + dahi",pw:"Banana (2) + coconut water + jaggery",po:"2 boiled ande + sattu + banana",d:"3 phulka + chicken (100g) + dal + dahi",cal:"2300 kcal",p:"95g",c:"310g",f:"55g"},
+          {b:"3 ande bhurji + 2 phulka + chai + banana",mm:"Banana (2) + dates",l:"Rice + fish curry (1 piece) + dal + dahi",pw:"Banana (2) + jaggery + water",po:"2 boiled ande + banana",d:"3 phulka + chicken (100g) + sabzi + dahi",cal:"2320 kcal",p:"97g",c:"312g",f:"56g"},
+          {b:"Boiled ande (3) + banana (2) + oats + chai",mm:"Dates (5) + coconut water",l:"Rice (1.5 cups) + chicken curry (100g) + dal + dahi",pw:"Banana (2) + jaggery",po:"2 boiled ande + sattu",d:"3 phulka + fish (1 piece) + dal + dahi",cal:"2310 kcal",p:"96g",c:"311g",f:"55g"},
+          {b:"2 ande + poha (large) + chai + banana",mm:"Banana (2) + khajoor + chana",l:"Rice + egg curry (2 ande) + dal + dahi",pw:"Banana (2) + coconut water",po:"2 boiled ande + banana",d:"3 phulka + chicken (100g) + dal + dahi",cal:"2300 kcal",p:"95g",c:"310g",f:"54g"},
+          {b:"3 ande omelette + 2 phulka + banana + chai",mm:"Dates (6) + fruit",l:"Rice (1.5 cups) + chicken (100g) + sabzi + dahi",pw:"Banana (2) + jaggery + water",po:"2 ande + sattu",d:"3 phulka + fish + dal + chhachh",cal:"2315 kcal",p:"96g",c:"311g",f:"55g"},
+          {b:"Anda bhurji (3) + upma + chai + banana",mm:"Banana + dates + chana",l:"Rice + chicken curry (100g) + dal + dahi",pw:"Banana (2) + coconut water",po:"2 boiled ande + banana",d:"3 phulka + chicken keema (100g) + dahi",cal:"2305 kcal",p:"95g",c:"310g",f:"55g"},
+          {b:"3 ande + banana (2) + dalia + chai",mm:"Dates (5) + makhana",l:"Rice (1.5 cups) + fish + dal + dahi",pw:"Banana (2) + jaggery",po:"2 boiled ande + sattu",d:"3 phulka + chicken (100g) + sabzi + dahi",cal:"2310 kcal",p:"96g",c:"311g",f:"55g"}
+        ],
+        200:[
+          {b:"4 ande + 2 phulka + banana (2) + chai",mm:"Banana + chicken (50g) + dates",l:"Rice (1.5 cups) + chicken (150g) + dal + dahi",pw:"Banana (2) + sports drink",po:"Whey OR 3 ande + banana",d:"3 phulka + fish (150g) + dal + dahi",cal:"2600 kcal",p:"115g",c:"325g",f:"65g"},
+          {b:"4 ande bhurji + toast + banana + chai",mm:"Banana (2) + badam + dates",l:"Rice + fish fry (2) + dal + dahi",pw:"Banana (2) + coconut water + dates",po:"Whey OR 3 boiled ande",d:"3 phulka + chicken (150g) + sabzi + dahi",cal:"2620 kcal",p:"117g",c:"327g",f:"66g"},
+          {b:"Boiled ande (4) + oats + milk + banana",mm:"Chicken (50g) + dates + badam",l:"Rice (1.5 cups) + chicken curry (150g) + dal + dahi",pw:"Banana (2) + sports drink",po:"Protein shake + banana",d:"3 phulka + fish tikka + dal + dahi",cal:"2610 kcal",p:"116g",c:"326g",f:"65g"},
+          {b:"4 ande + poha + banana + chai",mm:"Banana (2) + dates + badam",l:"Rice + egg masala (3 ande) + dal + dahi",pw:"Banana (2) + coconut water",po:"Whey + banana + milk",d:"3 phulka + chicken (150g) + dal + dahi",cal:"2600 kcal",p:"115g",c:"325g",f:"65g"},
+          {b:"Anda paratha (3 ande) + dahi + banana + chai",mm:"Chicken (50g) + dates + banana",l:"Rice (1.5 cups) + fish curry + dal + dahi",pw:"Banana (2) + sports drink",po:"3 boiled ande + banana",d:"3 phulka + chicken (150g) + sabzi + dahi",cal:"2615 kcal",p:"116g",c:"326g",f:"65g"},
+          {b:"4 ande + upma + banana + chai",mm:"Banana (2) + badam + dates",l:"Rice + chicken tikka (150g) + dal + dahi",pw:"Banana (2) + coconut water + jaggery",po:"Whey + banana",d:"3 phulka + fish (150g) + dal + dahi",cal:"2605 kcal",p:"115g",c:"325g",f:"65g"},
+          {b:"Boiled ande (4) + dalia + milk + banana",mm:"Chicken (50g) + dates + banana",l:"Rice (1.5 cups) + mutton curry (100g) + dal + dahi",pw:"Banana (2) + sports drink",po:"Whey OR 3 ande + banana",d:"3 phulka + chicken (150g) + dal + chhachh",cal:"2610 kcal",p:"116g",c:"326g",f:"65g"}
+        ],
+        300:[
+          {b:"4 ande + 2 phulka + whey + banana (2) + milk",mm:"Chicken (150g) + banana + badam",l:"Rice (2 cups) + chicken (200g) + dal + dahi",pw:"Banana (2) + energy drink + dates",po:"Whey + banana + milk",d:"3 phulka + fish (200g) + dal + dahi",cal:"2900 kcal",p:"140g",c:"345g",f:"78g"},
+          {b:"5 ande + oats + protein shake + banana",mm:"Grilled chicken (150g) + banana + dates",l:"Rice + chicken biryani (200g) + raita",pw:"Banana (2) + sports drink",po:"Whey + banana (2)",d:"3 phulka + grilled chicken (200g) + dal + dahi",cal:"2930 kcal",p:"143g",c:"348g",f:"79g"},
+          {b:"4 ande bhurji + toast + whey + banana + milk",mm:"Chicken (150g) + dates + badam",l:"Rice (2 cups) + fish (2 pieces) + chicken + dal",pw:"Banana (2) + energy drink",po:"Whey + banana + milk",d:"3 phulka + chicken tikka (200g) + dal",cal:"2910 kcal",p:"141g",c:"346g",f:"78g"},
+          {b:"5 ande + 2 phulka + protein shake + banana",mm:"Grilled chicken (150g) + banana + badam",l:"Rice + mutton curry (200g) + dal + dahi",pw:"Banana (2) + sports drink + dates",po:"Whey + banana",d:"3 phulka + fish (200g) + chicken + dahi",cal:"2920 kcal",p:"142g",c:"347g",f:"79g"},
+          {b:"4 ande + oats + whey + milk + banana",mm:"Chicken (150g) + dates",l:"Rice (2 cups) + chicken curry (200g) + dal + dahi",pw:"Banana (2) + coconut water + dates",po:"Whey + banana (2) + milk",d:"3 phulka + grilled fish (200g) + dal + dahi",cal:"2905 kcal",p:"140g",c:"345g",f:"78g"},
+          {b:"5 ande bhurji + toast + protein shake + banana",mm:"Grilled chicken (150g) + badam",l:"Rice + fish curry (2) + chicken + dahi",pw:"Banana (2) + energy drink",po:"Whey + banana + milk",d:"3 phulka + chicken (200g) + dal + dahi",cal:"2915 kcal",p:"141g",c:"346g",f:"78g"},
+          {b:"4 ande + 2 phulka + whey + banana (2) + dahi",mm:"Chicken (150g) + banana + dates + badam",l:"Rice (2 cups) + chicken biryani (200g) + raita",pw:"Banana (2) + sports drink + dates",po:"Whey + banana (2) + milk",d:"3 phulka + grilled chicken + fish + dal + dahi",cal:"2925 kcal",p:"142g",c:"347g",f:"79g"}
+        ]
+      }
+    }
+  }
+};
+
+// Regional food note appended to plans
+const REGION_NOTES = {
+  north: "",
+  south: "Note: Roti replaced with idli/dosa/rice. Dal replaced with sambhar/rasam. Use coconut oil, curry leaves, tamarind, mustard seeds. Filter coffee instead of chai.",
+  east: "Note: Rice is staple. Use mustard oil. Dal = moong/masoor. Fish (rohu/hilsa) preferred over chicken. Add posto (khus khus) in sabzi. Breakfast = muri or luchi.",
+  west: "Note: Roti = bajra/jowar roti or thepla. Dal = toor dal. Breakfast = thepla + dahi or dhokla. Use groundnut oil, sesame, jaggery, fenugreek. Kadhi popular."
+};
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+let appLoaded = false;
+
+// Hide install section if already running as installed PWA
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+  var installSection = document.getElementById('installAppSection');
+  if (installSection) installSection.style.display = 'none';
+}
+
+window.addEventListener('load', async () => {
+  // Init bottom nav click outside handler
+  document.addEventListener('click', (e) => {
+    const menu = document.getElementById('moreMenu');
+    const moreBtn = document.getElementById('bn-more');
+    if (menu && menu.style.display === 'block' && moreBtn && !menu.contains(e.target) && !moreBtn.contains(e.target)) {
+      menu.style.display = 'none';
+    }
+  });
+  loadStates();
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('mJoin').value = new Date().toISOString().split('T')[0];
+
+  // STEP 1: Check URL hash for reset/invite tokens BEFORE getSession
+  const _hash = new URLSearchParams(window.location.hash.replace('#', ''));
+  const _query = new URLSearchParams(window.location.search);
+  const _urlType = _hash.get('type') || _query.get('type');
+  const _accessToken = _hash.get('access_token') || _query.get('access_token');
+  const _refreshToken = _hash.get('refresh_token') || _query.get('refresh_token');
+  const _code = _query.get('code');
+
+  if ((_urlType === 'recovery' || _urlType === 'invite' || _urlType === 'signup') && (_accessToken || _code)) {
+    // Clear URL hash immediately
+    history.replaceState(null, '', window.location.pathname);
+    // Set session from tokens
+    if (_accessToken) {
+      await sb.auth.setSession({ access_token: _accessToken, refresh_token: _refreshToken || '' });
+    } else if (_code) {
+      await sb.auth.exchangeCodeForSession(_code);
+    }
+    // Show password screen
+    document.getElementById('ls').style.display = 'none';
+    document.getElementById('as').style.display = 'none';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('setPassScreen').style.display = 'flex';
+  } else {
+    // STEP 2: Normal load - check existing session
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      appLoaded = true;
+      user = session.user;
+      await loadGym();
+    } else {
+      document.getElementById('ls').style.display = 'none';
+      document.getElementById('as').style.display = 'flex';
+    }
+  }
+
+  // STEP 3: Listen for auth changes (login/logout/password reset)
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      appLoaded = false;
+      document.getElementById('ls').style.display = 'none';
+      document.getElementById('as').style.display = 'none';
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('setPassScreen').style.display = 'flex';
+      return;
+    }
+    if (event === 'SIGNED_IN' && !appLoaded) {
+      appLoaded = true;
+      user = session.user;
+      document.getElementById('setPassScreen').style.display = 'none';
+      document.getElementById('as').style.display = 'none';
+      document.getElementById('ls').style.display = 'flex';
+      await loadGym();
+      return;
+    }
+    if (event === 'SIGNED_OUT') {
+      appLoaded = false;
+      user = null; gym = null; members = []; expenses = [];
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('ls').style.display = 'none';
+      document.getElementById('as').style.display = 'flex';
+    }
+  });
+
+  // Fix: When app resumes from background, check if stuck on loading screen
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible') {
+      const appEl = document.getElementById('app');
+      const lsEl = document.getElementById('ls');
+      const asEl = document.getElementById('as');
+      // If app screen is hidden and loading screen is also hidden = stuck
+      if (appEl && appEl.style.display === 'none' && lsEl && lsEl.style.display === 'none' && asEl && asEl.style.display === 'none') {
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) {
+          appLoaded = false;
+          user = session.user;
+          lsEl.style.display = 'flex';
+          await loadGym();
+        } else {
+          asEl.style.display = 'flex';
+        }
+      }
+    }
+  });
+
+  // Re-check due dates every hour
+  setInterval(async () => {
+    if (user && members.length > 0) {
+      await autoCheckDueDates();
+      refreshDash();
+    }
+  }, 60 * 60 * 1000);
+});
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const email = v('lEmail'), pass = v('lPass');
+  if (!email || !pass) return showErr('authErr','Please fill all fields');
+  document.getElementById('lBtn').disabled = true;
+  document.getElementById('lBtn').textContent = 'Logging in...';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  document.getElementById('lBtn').disabled = false;
+  document.getElementById('lBtn').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Login to ManageGym Pro';
+  if (error) return showErr('authErr', error.message);
+  user = data.user;
+  hide('as'); show('ls');
+  await loadGym();
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  user = null; gym = null; members = []; expenses = [];
+  hide('app'); show('as');
+}
+
+// ── LOAD ──────────────────────────────────────────────────────────────────────
+async function loadGym() {
+  try {
+    let { data: g, error: gErr } = await sb.from('gyms').select('*').eq('id', user.id).single();
+    if (gErr || !g) {
+      // Create gym record if doesn't exist
+      const { data: newG } = await sb.from('gyms').insert({ id: user.id, gym_name: 'My Gym' }).select().single();
+      g = newG || { id: user.id, gym_name: 'My Gym' };
+    }
+    gym = g;
+    document.getElementById('ls').style.display = 'none';
+    document.getElementById('app').style.display = 'block'; document.getElementById('ls').style.display = 'none';
+    updateSidebar();
+    prefillSettings();
+    await Promise.all([loadMembers(), loadExpenses()]);
+    refreshDash();
+  } catch(e) {
+    console.error('loadGym error:', e);
+    document.getElementById('ls').style.display = 'none';
+    document.getElementById('as').style.display = 'flex';
+    showErr('authErr', 'Error loading gym. Please try logging in again.');
+  }
+}
+
+async function loadMembers() {
+  const { data } = await sb.from('members').select('*').eq('gym_id', user.id).order('created_at', { ascending: false });
+  members = data || [];
+  await autoCheckDueDates();
+}
+
+async function autoCheckDueDates() {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const toFlip = [];
+
+  for (const m of members) {
+    if (m.status === 'Paid' && m.due_date) {
+      const due = new Date(m.due_date);
+      due.setHours(0,0,0,0);
+      if (due < today) {
+        toFlip.push(m.id);
+        m.status = 'Pending'; // update local state immediately
+      }
+    }
+  }
+
+  if (toFlip.length > 0) {
+    // Batch update all overdue members to Pending in Supabase
+    await sb.from('members')
+      .update({ status: 'Pending' })
+      .in('id', toFlip);
+    console.log(`Auto-flipped ${toFlip.length} member(s) to Pending`);
+  }
+}
+
+async function loadExpenses() {
+  const { data } = await sb.from('expenses').select('*').eq('gym_id', user.id).order('created_at', { ascending: false });
+  expenses = data || [];
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+function nav(pg) {
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('act'));
+  document.querySelectorAll('.si').forEach(n => n.classList.remove('act'));
+  document.getElementById('pg-'+pg).classList.add('act');
+  const pgs = ['dashboard','members','fees','pnl','reminders','diet','settings'];
+  const items = document.querySelectorAll('.si');
+  const i = pgs.indexOf(pg);
+  if (i >= 0) items[i].classList.add('act');
+  // Sync bottom nav
+  document.querySelectorAll('.bn-item').forEach(n => n.classList.remove('act'));
+  const bnItem = document.getElementById('bn-'+pg);
+  if (bnItem) bnItem.classList.add('act');
+  if (pg==='fees') renderFees();
+  if (pg==='reminders') renderReminders();
+  if (pg==='diet') fillDietSelect();
+  if (pg==='pnl') renderPNL();
+  if (pg==='members') renderMembers(members);
+}
+
+function toggleMoreMenu() {
+  const m = document.getElementById('moreMenu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+
+
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function refreshDash() {
+  const total = members.length;
+  const coll = members.filter(m=>m.status==='Paid').reduce((s,m)=>s+Number(m.fee),0);
+  const pend = members.filter(m=>m.status==='Pending').reduce((s,m)=>s+Number(m.fee),0);
+  const today = new Date(), wk = new Date(); wk.setDate(today.getDate()+7);
+  const due = members.filter(m=>{ const d=new Date(m.due_date); return d>=today&&d<=wk; }).length;
+  const pc = members.filter(m=>m.status==='Pending').length;
+  setText('stTotal',total); setText('stColl','₹'+fmt(coll));
+  setText('stPend','₹'+fmt(pend)); setText('stDue',due);
+  const b = document.getElementById('pendBadge');
+  const bnb = document.getElementById('bnBadge');
+  if(pc>0){
+    b.textContent=pc;b.style.display='inline';
+    if(bnb){bnb.textContent=pc;bnb.style.display='inline';}
+  } else {
+    b.style.display='none';
+    if(bnb) bnb.style.display='none';
+  }
+  const tb = document.getElementById('dashTbl');
+  if (!members.length) { tb.innerHTML = eRow(5,'No members yet. Add your first member!'); return; }
+  tb.innerHTML = members.slice(0,6).map(m=>`<tr>
+    <td><div class="td-av">${avEl(m)}<div><div class="tn" style="cursor:pointer;color:var(--ac)" onclick="openProfile('${m.id}')">${esc(m.name)}</div><div class="th">${esc(m.phone)}</div></div></div></td>
+    <td><span class="bge bg-p">${m.plan}</span></td>
+    <td><span class="bge ${m.status==='Paid'?'bg-g':'bg-r'}">${m.status}</span></td>
+    <td style="font-size:12px;color:${isOD(m.due_date)?'var(--rd)':'var(--m1)'}">${fmtD(m.due_date)}</td>
+    <td>${m.status==='Pending'?`<button class="btn btp btn-sm" onclick="openCollect('${m.id}')">Collect ₹${fmt(m.fee)}</button>`:'<span style="color:var(--gn);font-size:12px">✓ Paid</span>'}</td>
+  </tr>`).join('');
+}
+
+// ── MEMBERS ───────────────────────────────────────────────────────────────────
+function renderMembers(list) {
+  const tb = document.getElementById('memTbl');
+  if (!list.length) { tb.innerHTML = eRow(6,'No members found.','Try a different search'); return; }
+  tb.innerHTML = list.map(m=>`<tr>
+    <td><div class="td-av">${avEl(m)}<div><div class="tn" style="cursor:pointer;color:var(--ac)" onclick="openProfile('${m.id}')">${esc(m.name)}</div><div class="th">${esc(m.phone)}</div></div></div></td>
+    <td><span class="bge bg-p">${m.plan}</span></td>
+    <td>₹${fmt(m.fee)}</td>
+    <td><span class="bge ${m.status==='Paid'?'bg-g':'bg-r'}">${m.status}</span></td>
+    <td style="font-size:12px;color:${isOD(m.due_date)?'var(--rd)':'var(--m1)'}">${fmtD(m.due_date)}</td>
+    <td><div style="display:flex;gap:6px">${m.status==='Pending'?`<button class="btn btp btn-sm" onclick="openCollect('${m.id}')">Collect</button>`:''}<button class="btn btd btn-sm" onclick="delMember('${m.id}')">Delete</button></div></td>
+  </tr>`).join('');
+}
+
+function filterM(q) {
+  renderMembers(members.filter(m=>m.name.toLowerCase().includes(q.toLowerCase())||m.phone.includes(q)));
+}
+
+function avEl(m) {
+  const colors = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#1abc9c'];
+  const col = colors[m.name.charCodeAt(0) % colors.length];
+  if (m.photo) return `<img class="av" src="${m.photo}" alt="${esc(m.name)}">`;
+  return `<div class="av-init" style="background:${col}">${m.name.charAt(0).toUpperCase()}</div>`;
+}
+
+async function addMember() {
+  const name = v('mName'), phone = v('mPhone'), fee = parseFloat(v('mFee'));
+  if (!name||!phone||!fee) { toast('Fill all required fields','er'); return; }
+  const join = v('mJoin') || new Date().toISOString().split('T')[0];
+  const { data, error } = await sb.from('members').insert({
+    gym_id: user.id, name, phone,
+    age: v('mAge'), weight: v('mWeight'),
+    plan: v('mPlan'), fee, status: v('mStatus'),
+    goal: v('mGoal'), join_date: join,
+    due_date: calcDue(join, v('mPlan')),
+    photo: memberPhotoB64 || null
+  }).select().single();
+  if (error) { toast('Error: '+error.message,'er'); return; }
+  members.unshift(data);
+  memberPhotoB64 = null;
+  document.getElementById('mAvPrev').innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+  closeM('addMemberM');
+  ['mName','mPhone','mAge','mWeight','mFee'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mJoin').value = new Date().toISOString().split('T')[0];
+  document.getElementById('mStatus').value = 'Paid';
+  refreshDash(); renderMembers(members);
+  toast('Member added!','ok');
+}
+
+function handleMemberPhoto(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    memberPhotoB64 = ev.target.result;
+    const prev = document.getElementById('mAvPrev');
+    prev.innerHTML = `<img src="${memberPhotoB64}" style="width:100%;height:100%;object-fit:cover">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function delMember(id) {
+  if (!confirm('Remove this member?')) return;
+  await sb.from('members').delete().eq('id',id);
+  members = members.filter(m=>m.id!==id);
+  refreshDash(); renderMembers(members);
+  toast('Member removed');
+}
+
+// ── COLLECT ───────────────────────────────────────────────────────────────────
+function openCollect(id) {
+  const m = members.find(x=>x.id===id); if(!m) return;
+  collectId = id;
+  setText('coAmt','₹'+fmt(m.fee));
+  setText('coName',m.name+' — '+m.plan);
+  setText('coUpi', gym?.upi_id || 'Not set — add in Settings');
+  document.getElementById('coAvWrap').innerHTML = `<div style="margin-bottom:10px">${avEl(m)}</div>`;
+  const wrap = document.getElementById('qrImgWrap');
+  if (gym?.qr_image) {
+    wrap.innerHTML = `<img src="${gym.qr_image}" style="width:100%;height:100%;object-fit:cover">`;
+  } else {
+    wrap.innerHTML = '<div class="qr-emp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:28px;height:28px;margin:0 auto 6px;display:block;opacity:.3"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/></svg><p>Upload QR in Settings</p></div>';
+  }
+  openM('collectM');
+}
+
+async function markPaid() {
+  if (!collectId) return;
+  const m = members.find(x=>x.id===collectId); if(!m) return;
+  const newDue = calcDue(new Date().toISOString().split('T')[0], m.plan);
+  await sb.from('members').update({ status:'Paid', due_date:newDue, reminder1_sent:null, reminder2_sent:null, reminder3_sent:null }).eq('id',collectId);
+  // Log payment to history
+  await sb.from('payments').insert({ gym_id: user.id, member_id: m.id, amount: m.fee, plan: m.plan, paid_date: new Date().toISOString().split('T')[0] });
+  Object.assign(m,{status:'Paid',due_date:newDue,reminder1_sent:null,reminder2_sent:null,reminder3_sent:null});
+  closeM('collectM'); collectId = null;
+  refreshDash(); renderMembers(members); renderFees();
+  toast('Payment collected! Due date renewed.','ok');
+}
+
+// ── FEES ──────────────────────────────────────────────────────────────────────
+function renderFees() {
+  const pend = members.filter(m=>String(m.status).trim()==='Pending');
+  setText('feeSub', pend.length+' members with pending payments');
+  const tb = document.getElementById('feeTbl');
+  if (!pend.length) { tb.innerHTML = eRow(6,'All fees collected! 🎉','Great job'); return; }
+  tb.innerHTML = pend.map(m=>{
+    const days = daysSince(m.due_date);
+    return `<tr>
+      <td><div class="td-av">${avEl(m)}<div><div class="tn" style="cursor:pointer;color:var(--ac)" onclick="openProfile('${m.id}')">${esc(m.name)}</div><div class="th">${esc(m.phone)}</div></div></div></td>
+      <td><span class="bge bg-p">${m.plan}</span></td>
+      <td>₹${fmt(m.fee)}</td>
+      <td style="font-size:12px">${fmtD(m.due_date)}</td>
+      <td><span style="font-size:12px;color:${days>0?'var(--rd)':days>-3?'var(--yl)':'var(--m1)'}">${days>0?days+' days overdue':days===0?'Due today':'Due in '+Math.abs(days)+' days'}</span></td>
+      <td><div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-sm btb" onclick="sendRem('${m.id}',0)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Remind</button>
+        <button class="btn btn-sm btp" onclick="openCollect('${m.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Collect</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── REMINDERS ─────────────────────────────────────────────────────────────────
+function renderReminders() {
+  const pend = members.filter(m=>String(m.status).trim()==='Pending');
+  const c = document.getElementById('remCont');
+  if (!pend.length) { c.innerHTML = '<div class="emp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><p>No pending reminders</p><small>All fees collected!</small></div>'; return; }
+  c.innerHTML = pend.map(m=>{
+    const r1=m.reminder1_sent, r2=m.reminder2_sent, r3=m.reminder3_sent;
+    const canR1=!r1, canR2=r1&&!r2&&daysSince(r1)>=2, canR3=r2&&!r3&&daysSince(r2)>=2;
+    const w2=r1&&!r2&&daysSince(r1)<2?`Wait ${2-daysSince(r1)} more day`:'';
+    const w3=r2&&!r3&&daysSince(r2)<2?`Wait ${2-daysSince(r2)} more day`:'';
+    return `<div class="rc">
+      <div class="rt">
+        <div><div class="td-av" style="align-items:center">${avEl(m)}<div><div class="rn">${esc(m.name)}</div><div class="rm">${esc(m.phone)} · ₹${fmt(m.fee)} pending</div></div></div></div>
+        <button class="btn btp btn-sm" onclick="openCollect('${m.id}')">Collect Now</button>
+      </div>
+      <div class="rtr">
+        <div class="rd ${r1?'done':canR1?'next':''}"></div>
+        <div class="rl2 ${r1?'done':''}"></div>
+        <div class="rd ${r2?'done':canR2?'next':''}"></div>
+        <div class="rl2 ${r2?'done':''}"></div>
+        <div class="rd ${r3?'done':canR3?'fin':''}"></div>
+        <div class="rlbl">${r3?'All 3 reminders sent':r2?'2 sent'+( w3?' · '+w3:''):r1?'1 sent'+( w2?' · '+w2:''):'No reminder sent yet'}</div>
+      </div>
+      <div class="rba">
+        <button class="btn btn-sm btb" onclick="sendRem('${m.id}',1)" ${!canR1?'disabled':''}>Reminder 1 ${r1?'✓':''}</button>
+        <button class="btn btn-sm btb" onclick="sendRem('${m.id}',2)" ${!canR2?'disabled':''}>Reminder 2 ${r2?'✓':w2?'('+w2+')':''}</button>
+        <button class="btn btn-sm btd" onclick="sendRem('${m.id}',3)" ${!canR3?'disabled':''}>Final Reminder ${r3?'✓':w3?'('+w3+')':''}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function sendRem(id, stage) {
+  const m = members.find(x=>x.id===id); if(!m) return;
+  const gName = gym?.gym_name||'Our Gym';
+  const auto = !m.reminder1_sent?1:(!m.reminder2_sent&&daysSince(m.reminder1_sent)>=2)?2:(!m.reminder3_sent&&m.reminder2_sent&&daysSince(m.reminder2_sent)>=2)?3:0;
+  const s = stage || auto;
+  if (!s) { toast('Wait 2 days between reminders','er'); return; }
+  const msgs = [
+    `Hi ${m.name}! 🏋️\n\nYour gym membership fee of *₹${m.fee}* is due today.\n\nPlease pay at your earliest to continue your membership.\n\n_${gName}_`,
+    `Hi ${m.name},\n\nThis is a reminder that your fee of *₹${m.fee}* is still pending.\n\nKindly clear the payment today to avoid any break in membership.\n\n_${gName}_`,
+    `Hi ${m.name},\n\n⚠️ *Final Reminder*\n\nYour fee of *₹${m.fee}* is overdue. Please pay immediately or your membership may be paused.\n\nContact: ${gym?.owner_phone||''}\n\n_${gName}_`
+  ];
+  window.open(`https://wa.me/91${m.phone}?text=${encodeURIComponent(msgs[s-1])}`,'_blank');
+  const now = new Date().toISOString();
+  const upd = s===1?{reminder1_sent:now}:s===2?{reminder2_sent:now}:{reminder3_sent:now};
+  await sb.from('members').update(upd).eq('id',id);
+  Object.assign(m,upd);
+  renderReminders(); renderFees();
+  toast(`Reminder ${s} sent to ${m.name}!`,'ok');
+}
+
+// ── DIET ──────────────────────────────────────────────────────────────────────
+function fillDietSelect() {
+  const sel = document.getElementById('dMember');
+  sel.innerHTML = '<option value="">Select member</option>' + members.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');
+}
+
+function genDiet() {
+  const mId = v('dMember'), goal = v('dGoal'), type = v('dType'), budget = v('dBudget');
+  const m = members.find(x=>x.id===mId);
+  const name = m ? m.name : 'Member';
+  const region = getRegion(gym?.state||'');
+  const btn = document.getElementById('dietBtn');
+  btn.textContent = 'Generating...'; btn.disabled = true;
+
+  try {
+    // Get plans - fall back to north if region not available
+    const regionData = MEALS[region] || MEALS['north'];
+    const goalData = regionData[goal] || regionData['weight_loss'];
+    const typeData = goalData[type] || goalData['veg'];
+    const budgetData = typeData[budget] || typeData['200'];
+    currentDietPlan = { name, goal, type, budget, region, days: budgetData, member: m };
+  } catch(e) {
+    const goalData = MEALS['north'][goal] || MEALS['north']['weight_loss'];
+    const typeData = goalData[type] || goalData['veg'];
+    currentDietPlan = { name, goal, type, budget, region: 'north', days: typeData[budget]||typeData['200'], member: m };
+  }
+
+  setTimeout(()=>{
+    renderDietPlan(currentDietPlan);
+    btn.textContent = 'Generate 7-Day Plan'; btn.disabled = false;
+  }, 800);
+}
+
+function renderDietPlan(plan) {
+  const goalLabels = {weight_loss:'Weight Loss',muscle_gain:'Muscle Gain',maintain:'Maintain Weight',endurance:'Endurance'};
+  const regionNote = REGION_NOTES[plan.region] || '';
+  let currentDay = 0;
+  const out = document.getElementById('dietOut');
+  out.innerHTML = `
+    <div class="cd">
+      <div class="ch">
+        <div>
+          <div class="ct">7-Day Diet Plan — ${esc(plan.name)}</div>
+          <div style="font-size:11px;color:var(--m1);margin-top:2px">${goalLabels[plan.goal]} · ${plan.type==='veg'?'Vegetarian':'Non-Vegetarian'} · ₹${plan.budget}/day budget · ${(plan.region.charAt(0).toUpperCase()+plan.region.slice(1))} India</div>
+        </div>
+        <div style="display:flex;gap:7px">
+          <button class="btn btg btn-sm" onclick="showPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>View PDF</button>
+          <button class="btn btb btn-sm" onclick="shareWA()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>WhatsApp</button>
+        </div>
+      </div>
+      <div class="cb">
+        ${regionNote ? `<div style="background:rgba(184,255,0,.06);border:1px solid rgba(184,255,0,.15);border-radius:var(--r);padding:10px 13px;margin-bottom:14px;font-size:12px;color:var(--m1)">${regionNote}</div>` : ''}
+        <div class="day-tabs" id="dayTabs">${plan.days.map((_,i)=>`<div class="day-tab ${i===0?'act':''}" onclick="showDay(${i})" id="dt${i}">Day ${i+1}</div>`).join('')}</div>
+        <div id="dayContent"></div>
+      </div>
+    </div>`;
+  showDay(0);
+}
+
+function showDay(i) {
+  if (!currentDietPlan) return;
+  document.querySelectorAll('.day-tab').forEach((t,idx)=>t.classList.toggle('act',idx===i));
+  const d = currentDietPlan.days[i];
+  document.getElementById('dayContent').innerHTML = `
+    <div class="ml"><div class="mt2">🌅 Breakfast (7:00–8:00 AM)</div><div class="mi2">${d.b}</div></div>
+    <div class="ml"><div class="mt2">🍎 Mid Morning (10:30 AM)</div><div class="mi2">${d.mm}</div></div>
+    <div class="ml"><div class="mt2">☀️ Lunch (1:00–2:00 PM)</div><div class="mi2">${d.l}</div></div>
+    <div class="ml"><div class="mt2">⚡ Pre-Workout (5:00–5:30 PM)</div><div class="mi2">${d.pw}</div></div>
+    <div class="ml"><div class="mt2">💪 Post-Workout (7:30–8:00 PM)</div><div class="mi2">${d.po}</div></div>
+    <div class="ml"><div class="mt2">🌙 Dinner (9:00–9:30 PM)</div><div class="mi2">${d.d}</div></div>
+    <div class="macs">
+      <span class="mac">🔥 ${d.cal}</span>
+      <span class="mac">🥩 Protein: ${d.p}</span>
+      <span class="mac">🍚 Carbs: ${d.c}</span>
+      <span class="mac">🥑 Fat: ${d.f}</span>
+      <span class="mac">💧 Water: 3-4 litres</span>
+    </div>`;
+}
+
+function showPDF() {
+  if (!currentDietPlan) return;
+  const plan = currentDietPlan;
+  const goalLabels = {weight_loss:'Weight Loss',muscle_gain:'Muscle Gain',maintain:'Maintain Weight',endurance:'Endurance'};
+  const gymName = gym?.gym_name || 'My Gym';
+  const logo = gym?.logo || '';
+  const regionNote = REGION_NOTES[plan.region] || '';
+
+  let html = `
+    <div style="text-align:center;border-bottom:2px solid #000;padding-bottom:16px;margin-bottom:20px">
+      ${logo ? `<img src="${logo}" style="width:60px;height:60px;border-radius:8px;object-fit:cover;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto">` : ''}
+      <h1 style="font-size:22px;font-weight:800;margin-bottom:3px">${gymName}</h1>
+      <h2 style="font-size:16px;font-weight:600;color:#333;margin-bottom:4px">7-Day Diet Plan</h2>
+      <p style="font-size:13px;color:#555">Member: <strong>${plan.name}</strong> &nbsp;|&nbsp; Goal: ${goalLabels[plan.goal]} &nbsp;|&nbsp; ${plan.type==='veg'?'Vegetarian':'Non-Vegetarian'}</p>
+      <p style="font-size:12px;color:#777;margin-top:3px">Budget: ₹${plan.budget}/day &nbsp;|&nbsp; Region: ${plan.region.charAt(0).toUpperCase()+plan.region.slice(1)} India &nbsp;|&nbsp; Date: ${new Date().toLocaleDateString('en-IN')}</p>
+    </div>
+    ${regionNote ? `<div style="background:#f0fff0;border:1px solid #90ee90;border-radius:6px;padding:10px 12px;margin-bottom:16px;font-size:12px;color:#555">${regionNote}</div>` : ''}`;
+
+  plan.days.forEach((d,i) => {
+    html += `
+      <div style="margin-bottom:18px;page-break-inside:avoid">
+        <h3 style="font-size:14px;font-weight:700;background:#f5f5f5;padding:7px 12px;border-radius:5px;margin-bottom:10px">Day ${i+1}</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          ${[['🌅 Breakfast (7:00–8:00 AM)',d.b],['🍎 Mid Morning (10:30 AM)',d.mm],['☀️ Lunch (1:00–2:00 PM)',d.l],['⚡ Pre-Workout (5:00 PM)',d.pw],['💪 Post-Workout (7:30 PM)',d.po],['🌙 Dinner (9:00 PM)',d.d]].map(([time,food])=>`
+          <tr style="border-bottom:1px solid #eee">
+            <td style="padding:6px 8px;font-weight:600;color:#333;width:35%;vertical-align:top">${time}</td>
+            <td style="padding:6px 8px;color:#444">${food}</td>
+          </tr>`).join('')}
+        </table>
+        <div style="background:#f9f9f9;border-radius:5px;padding:6px 10px;margin-top:6px;font-size:11px;color:#666">
+          🔥 ${d.cal} &nbsp;|&nbsp; Protein: ${d.p} &nbsp;|&nbsp; Carbs: ${d.c} &nbsp;|&nbsp; Fat: ${d.f} &nbsp;|&nbsp; 💧 3-4 litres water
+        </div>
+      </div>`;
+  });
+
+  html += `<div style="border-top:1px solid #ddd;padding-top:12px;margin-top:8px;font-size:11px;color:#777;text-align:center">
+    <p>General Tips: Avoid fried food, sugary drinks & maida. Sleep 7-8 hours. Exercise consistently.</p>
+    <p style="margin-top:4px">Generated by ManageGym Pro &nbsp;|&nbsp; ${gymName}</p>
+  </div>`;
+
+  document.getElementById('pdfBox').innerHTML = html;
+  document.getElementById('pdfPreview').style.display = 'flex';
+}
+
+function closePDF() {
+  document.getElementById('pdfPreview').style.display = 'none';
+}
+
+function shareWA() {
+  if (!currentDietPlan) return;
+  const plan = currentDietPlan;
+  const m = plan.member;
+  const goalLabels = {weight_loss:'Weight Loss',muscle_gain:'Muscle Gain',maintain:'Maintain Weight',endurance:'Endurance'};
+  let msg = `🏋️ *7-Day Diet Plan from ${gym?.gym_name||'ManageGym Pro'}*\n\n`;
+  msg += `*Member:* ${plan.name}\n*Goal:* ${goalLabels[plan.goal]}\n*Diet:* ${plan.type==='veg'?'Vegetarian':'Non-Vegetarian'}\n*Budget:* ₹${plan.budget}/day\n\n`;
+  plan.days.slice(0,3).forEach((d,i) => {
+    msg += `*Day ${i+1}:*\n`;
+    msg += `🌅 Breakfast: ${d.b}\n`;
+    msg += `☀️ Lunch: ${d.l}\n`;
+    msg += `🌙 Dinner: ${d.d}\n`;
+    msg += `🔥 ${d.cal} | Protein: ${d.p}\n\n`;
+  });
+  msg += `_...and 4 more days. Contact ${gym?.gym_name||'gym'} for full plan._\n\n💧 Drink 3-4 litres water daily.`;
+  const phone = m?.phone || '';
+  if (phone) window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`,'_blank');
+  else { navigator.clipboard?.writeText(msg); toast('Plan copied! Open WhatsApp manually.','ok'); }
+}
+
+// ── PNL ───────────────────────────────────────────────────────────────────────
+function renderPNL() {
+  const rev = members.filter(m=>m.status==='Paid').reduce((s,m)=>s+Number(m.fee),0);
+  const pend = members.filter(m=>m.status==='Pending').reduce((s,m)=>s+Number(m.fee),0);
+  const exp = expenses.reduce((s,e)=>s+Number(e.amount),0);
+  setText('pRev','₹'+fmt(rev)); setText('pExp','₹'+fmt(exp));
+  setText('pProfit','₹'+fmt(rev-exp)); setText('pPend','₹'+fmt(pend));
+  const el = document.getElementById('expList');
+  if (!expenses.length) { el.innerHTML='<p style="color:var(--m1);font-size:13px;text-align:center;padding:12px">No expenses added yet.</p>'; return; }
+  el.innerHTML = expenses.map(e=>`<div class="er"><span>${esc(e.type)}</span><div style="display:flex;align-items:center;gap:11px"><span style="color:var(--rd)">₹${fmt(e.amount)}</span><span style="font-size:11px;color:var(--m2)">${fmtD(e.created_at)}</span><button onclick="delExp('${e.id}')" style="background:none;border:none;color:var(--m1);cursor:pointer;font-size:13px;padding:2px 4px">✕</button></div></div>`).join('');
+}
+
+async function addExp() {
+  const type = v('eType'), amount = parseFloat(v('eAmt'));
+  if (!amount||amount<=0) { toast('Enter valid amount','er'); return; }
+  const { data } = await sb.from('expenses').insert({ gym_id:user.id, type, amount }).select().single();
+  expenses.unshift(data);
+  document.getElementById('eAmt').value = '';
+  renderPNL(); toast('Expense added','ok');
+}
+
+async function delExp(id) {
+  await sb.from('expenses').delete().eq('id',id);
+  expenses = expenses.filter(e=>e.id!==id);
+  renderPNL();
+}
+
+// ── SETTINGS ─────────────────────────────────────────────────────────────────
+function prefillSettings() {
+  if (!gym) return;
+  document.getElementById('sGymName').value = gym.gym_name||'';
+  document.getElementById('sPhone').value = gym.owner_phone||'';
+  document.getElementById('sUpi').value = gym.upi_id||'';
+  // State/city
+  if (gym.state) {
+    document.getElementById('sState').value = gym.state;
+  }
+  if (gym.city) {
+    document.getElementById('sCity').value = gym.city;
+  }
+  if (gym.logo) {
+    document.getElementById('logoPrev').src = gym.logo;
+    document.getElementById('logoPrev').style.display = 'block';
+    document.getElementById('logoPrompt').style.display = 'none';
+  }
+  if (gym.qr_image) {
+    document.getElementById('qrPrev').src = gym.qr_image;
+    document.getElementById('qrPrev').style.display = 'block';
+    document.getElementById('qrPrompt').style.display = 'none';
+  }
+}
+
+function handleLogo(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    gym.logo = ev.target.result;
+    document.getElementById('logoPrev').src = ev.target.result;
+    document.getElementById('logoPrev').style.display = 'block';
+    document.getElementById('logoPrompt').style.display = 'none';
+    updateSidebar();
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleQR(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    gym.qr_image = ev.target.result;
+    document.getElementById('qrPrev').src = ev.target.result;
+    document.getElementById('qrPrev').style.display = 'block';
+    document.getElementById('qrPrompt').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveSettings() {
+  const upd = {
+    gym_name: v('sGymName')||'My Gym',
+    owner_phone: v('sPhone'),
+    upi_id: v('sUpi'),
+    state: v('sState') || document.getElementById('sState').value,
+    city: document.getElementById('sCity').value.trim()
+  };
+  if (gym.logo) upd.logo = gym.logo;
+  if (gym.qr_image) upd.qr_image = gym.qr_image;
+  await sb.from('gyms').update(upd).eq('id',user.id);
+  Object.assign(gym, upd);
+  updateSidebar(); toast('Settings saved!','ok');
+}
+
+function updateSidebar() {
+  const name = gym?.gym_name||'My Gym';
+  setText('sbGymName',name); setText('sbGymName2',name);
+  setText('sbEmail',user?.email||'');
+  const settEmail = document.getElementById('settingsEmail');
+  if(settEmail) settEmail.textContent = user?.email||'-';
+  const init = document.getElementById('sbLogoInit');
+  const img = document.getElementById('sbLogoImg');
+  if (gym?.logo) { img.src=gym.logo; img.style.display='block'; init.style.display='none'; }
+  else { init.textContent=(name.charAt(0)||'G').toUpperCase(); init.style.display='flex'; img.style.display='none'; }
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function calcDue(from, plan) {
+  const d = new Date(from);
+  if(plan==='Monthly') d.setMonth(d.getMonth()+1);
+  else if(plan==='Quarterly') d.setMonth(d.getMonth()+3);
+  else if(plan==='Half Yearly') d.setMonth(d.getMonth()+6);
+  else if(plan==='Yearly') d.setFullYear(d.getFullYear()+1);
+  return d.toISOString().split('T')[0];
+}
+function isOD(d){return d&&new Date(d)<new Date()}
+function daysSince(d){if(!d)return 999;return Math.floor((new Date()-new Date(d))/86400000)}
+function fmtD(d){if(!d)return '—';return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}
+function fmt(n){return Number(n||0).toLocaleString('en-IN')}
+function v(id){return document.getElementById(id)?.value?.trim()||''}
+function setText(id,t){const e=document.getElementById(id);if(e)e.textContent=t}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function show(id){
+  const el = document.getElementById(id);
+  if(id === 'app') el.style.display = 'block';
+  else el.style.display = 'flex';
+}
+function hide(id){document.getElementById(id).style.display='none'}
+function openM(id){document.getElementById(id).classList.add('op')}
+function closeM(id){document.getElementById(id).classList.remove('op')}
+function eRow(c,m,s=''){return `<tr><td colspan="${c}"><div class="emp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>${m}</p>${s?`<small>${s}</small>`:''}</div></td></tr>`}
+function showErr(id,m){const e=document.getElementById(id);e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',4000)}
+function toast(m,t=''){const e=document.getElementById('toast');e.textContent=m;e.className='tst'+(t?' '+t:'');e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000)}
+
+// ── MEMBER PROFILE ────────────────────────────────────────────────────────────
+let profileMemberId = null;
+let isEditMode = false;
+
+async function openProfile(id) {
+  const m = members.find(x=>x.id===id);
+  if (!m) return;
+  profileMemberId = id;
+  isEditMode = false;
+  document.getElementById('profileView').style.display = 'block';
+  document.getElementById('profileEdit').style.display = 'none';
+  document.getElementById('profileSaveBtn').style.display = 'none';
+  document.getElementById('profileEditBtn').textContent = 'Edit Details';
+  document.getElementById('profileDelBtn').style.display = 'inline-flex';
+  const colors = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#1abc9c'];
+  const col = colors[m.name.charCodeAt(0) % colors.length];
+  setText('profileTitle', m.name);
+  setText('profileName', m.name);
+  setText('profilePhone', m.phone);
+  setText('profileAge', m.age ? m.age + ' years' : '—');
+  setText('profileWeight', m.weight ? m.weight + ' kg' : '—');
+  setText('profileJoin', fmtD(m.join_date));
+  setText('profileGoal', m.goal || '—');
+  setText('profileFee', '₹' + fmt(m.fee));
+  setText('profileDue', fmtD(m.due_date));
+  const avWrap = document.getElementById('profileAvatar');
+  if (m.photo) {
+    avWrap.innerHTML = `<img src="${m.photo}" style="width:70px;height:70px;border-radius:50%;object-fit:cover;border:2px solid var(--ac)">`;
+  } else {
+    avWrap.innerHTML = `<div style="width:70px;height:70px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-size:26px;font-weight:700;color:#fff">${m.name.charAt(0).toUpperCase()}</div>`;
+  }
+  document.getElementById('profileBadges').innerHTML = `
+    <span class="bge bg-p">${m.plan}</span>
+    <span class="bge ${m.status==='Paid'?'bg-g':'bg-r'}">${m.status}</span>
+    ${isOD(m.due_date) ? '<span class="bge bg-r">Overdue</span>' : ''}
+  `;
+  document.getElementById('payHistory').innerHTML = '<div style="text-align:center;padding:20px;color:var(--m1);font-size:13px">Loading...</div>';
+  openM('profileM');
+  const { data: pays } = await sb.from('payments').select('*').eq('member_id', id).order('paid_date', { ascending: false });
+  const payList = pays || [];
+  const total = payList.reduce((s,p) => s + Number(p.amount), 0);
+  setText('profileTotalPaid', '₹' + fmt(total));
+  if (!payList.length) {
+    document.getElementById('payHistory').innerHTML = '<div style="text-align:center;padding:20px;color:var(--m1);font-size:13px">No payments recorded yet.</div>';
+  } else {
+    document.getElementById('payHistory').innerHTML = payList.map(p => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--b1);font-size:13px">
+        <div><span style="color:var(--gn);font-weight:500">✓ Paid</span><span style="color:var(--m1);margin-left:8px;font-size:11px">${p.plan||m.plan}</span></div>
+        <div style="display:flex;gap:12px;align-items:center"><span style="color:var(--gn);font-weight:600">₹${fmt(p.amount)}</span><span style="font-size:11px;color:var(--m2)">${fmtD(p.paid_date)}</span></div>
+      </div>`).join('');
+  }
+}
+
+function toggleEdit() {
+  isEditMode = !isEditMode;
+  const m = members.find(x=>x.id===profileMemberId);
+  if (!m) return;
+  if (isEditMode) {
+    document.getElementById('profileView').style.display = 'none';
+    document.getElementById('profileEdit').style.display = 'block';
+    document.getElementById('profileSaveBtn').style.display = 'inline-flex';
+    document.getElementById('profileEditBtn').textContent = 'Cancel Edit';
+    document.getElementById('profileDelBtn').style.display = 'none';
+    document.getElementById('eName').value = m.name;
+    document.getElementById('ePhone').value = m.phone;
+    document.getElementById('eAge').value = m.age || '';
+    document.getElementById('eWeight').value = m.weight || '';
+    document.getElementById('ePlan').value = m.plan;
+    document.getElementById('eFee').value = m.fee;
+    document.getElementById('eStatus').value = m.status;
+    document.getElementById('eGoal').value = m.goal || 'General Fitness';
+    document.getElementById('editMemberId').value = m.id;
+  } else {
+    document.getElementById('profileView').style.display = 'block';
+    document.getElementById('profileEdit').style.display = 'none';
+    document.getElementById('profileSaveBtn').style.display = 'none';
+    document.getElementById('profileEditBtn').textContent = 'Edit Details';
+    document.getElementById('profileDelBtn').style.display = 'inline-flex';
+  }
+}
+
+async function saveMemberEdit() {
+  const id = document.getElementById('editMemberId').value;
+  const m = members.find(x=>x.id===id);
+  if (!m) return;
+  const updates = {
+    name: document.getElementById('eName').value.trim(),
+    phone: document.getElementById('ePhone').value.trim(),
+    age: document.getElementById('eAge').value,
+    weight: document.getElementById('eWeight').value,
+    plan: document.getElementById('ePlan').value,
+    fee: parseFloat(document.getElementById('eFee').value),
+    status: document.getElementById('eStatus').value,
+    goal: document.getElementById('eGoal').value
+  };
+  if (!updates.name || !updates.phone || !updates.fee) { toast('Fill all required fields','er'); return; }
+  await sb.from('members').update(updates).eq('id', id);
+  Object.assign(m, updates);
+  closeM('profileM');
+  refreshDash(); renderMembers(members);
+  toast('Member updated!','ok');
+}
+
+async function delFromProfile() {
+  if (!confirm('Delete this member? Cannot be undone.')) return;
+  await sb.from('members').delete().eq('id', profileMemberId);
+  members = members.filter(m=>m.id!==profileMemberId);
+  closeM('profileM');
+  refreshDash(); renderMembers(members);
+  toast('Member deleted');
+}
+
+// ── FORGOT PASSWORD ───────────────────────────────────────────────────────────
+function showForgot() {
+  document.getElementById('forgotSection').style.display = 'block';
+  document.getElementById('forgotEmail').value = document.getElementById('lEmail').value || '';
+  document.getElementById('forgotErr').style.display = 'none';
+  document.getElementById('forgotSuc').style.display = 'none';
+}
+
+function hideForgot() {
+  document.getElementById('forgotSection').style.display = 'none';
+}
+
+async function sendReset() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!email) {
+    document.getElementById('forgotErr').textContent = 'Please enter your email address';
+    document.getElementById('forgotErr').style.display = 'block';
+    return;
+  }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin
+  });
+  if (error) {
+    document.getElementById('forgotErr').textContent = error.message;
+    document.getElementById('forgotErr').style.display = 'block';
+  } else {
+    document.getElementById('forgotErr').style.display = 'none';
+    document.getElementById('forgotSuc').textContent = 'Password reset email sent! Check your inbox and click the link.';
+    document.getElementById('forgotSuc').style.display = 'block';
+  }
+}
+
+// Handle password reset redirect (when user clicks email link)
+async function handlePasswordReset() {
+  // Handled by onAuthStateChange in main init
+}
+
+async function doSetInvitePassword() {
+  const p1 = document.getElementById('spPass').value;
+  const p2 = document.getElementById('spConfirm').value;
+  const err = document.getElementById('spErr');
+
+  if (!p1 || p1.length < 6) {
+    err.textContent = 'Password must be at least 6 characters';
+    err.style.display = 'block'; return;
+  }
+  if (p1 !== p2) {
+    err.textContent = 'Passwords do not match';
+    err.style.display = 'block'; return;
+  }
+
+  const btn = document.getElementById('spBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Setting up your account...';
+
+  const { data, error } = await sb.auth.updateUser({ password: p1 });
+  if (error) {
+    err.textContent = error.message;
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Set Password & Enter App';
+    return;
+  }
+
+  // Force load app directly - most reliable approach
+  appLoaded = true;
+  document.getElementById('setPassScreen').style.display = 'none';
+  document.getElementById('as').style.display = 'none';
+  document.getElementById('ls').style.display = 'flex';
+  await loadGym();
+}
+
+async function doSetPassword() {
+  const p1 = document.getElementById('newPass').value;
+  const p2 = document.getElementById('confirmPass').value;
+  if (!p1 || p1.length < 6) {
+    document.getElementById('resetErr').textContent = 'Password must be at least 6 characters';
+    document.getElementById('resetErr').style.display = 'block'; return;
+  }
+  if (p1 !== p2) {
+    document.getElementById('resetErr').textContent = 'Passwords do not match';
+    document.getElementById('resetErr').style.display = 'block'; return;
+  }
+  const { error } = await sb.auth.updateUser({ password: p1 });
+  if (error) {
+    document.getElementById('resetErr').textContent = error.message;
+    document.getElementById('resetErr').style.display = 'block';
+  } else {
+    document.getElementById('resetSuc').textContent = 'Password updated! Logging you in...';
+    document.getElementById('resetSuc').style.display = 'block';
+    setTimeout(async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        appLoaded = true;
+        user = session.user;
+        document.getElementById('setPassScreen').style.display = 'none';
+        document.getElementById('as').style.display = 'none';
+        document.getElementById('ls').style.display = 'flex';
+        await loadGym();
+      }
+    }, 1500);
+  }
+}
+
+// ── INSTALL APP ───────────────────────────────────────────────────────────────
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+function installAndroid() {
+  if (deferredPrompt) {
+    // Native install prompt available
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((result) => {
+      if (result.outcome === 'accepted') {
+        toast('App installed successfully!', 'ok');
+      }
+      deferredPrompt = null;
+    });
+  } else {
+    // Show manual instructions
+    document.getElementById('installTitle').textContent = 'Install on Android';
+    document.getElementById('installSteps').innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:28px;height:28px;background:var(--ac);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">1</div>
+          <div style="font-size:14px;color:var(--tx);line-height:1.5">Open this website in <strong>Chrome browser</strong> on your Android phone</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:28px;height:28px;background:var(--ac);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">2</div>
+          <div style="font-size:14px;color:var(--tx);line-height:1.5">Tap the <strong>3 dots menu (⋮)</strong> in top right corner</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:28px;height:28px;background:var(--ac);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">3</div>
+          <div style="font-size:14px;color:var(--tx);line-height:1.5">Tap <strong>"Add to Home screen"</strong></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:28px;height:28px;background:var(--ac);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">4</div>
+          <div style="font-size:14px;color:var(--tx);line-height:1.5">Tap <strong>"Add"</strong> — ManageGym Pro icon appears on your home screen!</div>
+        </div>
+        <div style="background:rgba(200,255,0,0.08);border:1px solid rgba(200,255,0,0.2);border-radius:8px;padding:12px;margin-top:4px">
+          <div style="font-size:12px;color:var(--ac);font-weight:600;margin-bottom:4px">Website URL to open:</div>
+          <div style="font-size:13px;color:var(--tx);word-break:break-all">${window.location.origin}</div>
+        </div>
+      </div>
+    `;
+    document.getElementById('installModal').style.display = 'flex';
+  }
+}
+
+function installIOS() {
+  document.getElementById('installTitle').textContent = 'Install on iPhone';
+  document.getElementById('installSteps').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:28px;height:28px;background:var(--ac);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">1</div>
+        <div style="font-size:14px;color:var(--tx);line-height:1.5">Open this website in <strong>Safari browser</strong> on your iPhone</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:28px;height:28px;background:var(--ac);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">2</div>
+        <div style="font-size:14px;color:var(--tx);line-height:1.5">Tap the <strong>Share button (□↑)</strong> at the bottom</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:28px;height:28px;background:var(--ac);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">3</div>
+        <div style="font-size:14px;color:var(--tx);line-height:1.5">Scroll down and tap <strong>"Add to Home Screen"</strong></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:28px;height:28px;background:var(--ac);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">4</div>
+        <div style="font-size:14px;color:var(--tx);line-height:1.5">Tap <strong>"Add"</strong> — ManageGym Pro icon appears on your home screen!</div>
+      </div>
+      <div style="background:rgba(200,255,0,0.08);border:1px solid rgba(200,255,0,0.2);border-radius:8px;padding:12px;margin-top:4px">
+        <div style="font-size:12px;color:var(--ac);font-weight:600;margin-bottom:4px">Website URL to open:</div>
+        <div style="font-size:13px;color:var(--tx);word-break:break-all">${window.location.origin}</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('installModal').style.display = 'flex';
+}
+</script>
+
+<!-- MEMBER PROFILE MODAL -->
+<div class="mo" id="profileM">
+  <div class="md" style="max-width:580px">
+    <div class="mh">
+      <div class="mt" id="profileTitle">Member Profile</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btp btn-sm" id="profileEditBtn" onclick="toggleEdit()">Edit Details</button>
+        <button class="mc" onclick="closeM('profileM')">✕</button>
+      </div>
+    </div>
+    <div class="mb">
+      <!-- PROFILE VIEW MODE -->
+      <div id="profileView">
+        <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap">
+          <div id="profileAvatar" style="flex-shrink:0"></div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-family:Syne,sans-serif;font-size:20px;font-weight:700;margin-bottom:4px" id="profileName"></div>
+            <div style="font-size:13px;color:var(--m1);margin-bottom:12px" id="profilePhone"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap" id="profileBadges"></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+          <div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px">
+            <div style="font-size:10px;color:var(--m1);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Age</div>
+            <div style="font-size:15px;font-weight:600" id="profileAge">—</div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px">
+            <div style="font-size:10px;color:var(--m1);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Weight</div>
+            <div style="font-size:15px;font-weight:600" id="profileWeight">—</div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px">
+            <div style="font-size:10px;color:var(--m1);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Join Date</div>
+            <div style="font-size:15px;font-weight:600" id="profileJoin">—</div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px">
+            <div style="font-size:10px;color:var(--m1);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Goal</div>
+            <div style="font-size:15px;font-weight:600" id="profileGoal">—</div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px">
+            <div style="font-size:10px;color:var(--m1);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Monthly Fee</div>
+            <div style="font-size:15px;font-weight:600;color:var(--gn)" id="profileFee">—</div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px">
+            <div style="font-size:10px;color:var(--m1);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Next Due</div>
+            <div style="font-size:15px;font-weight:600" id="profileDue">—</div>
+          </div>
+        </div>
+
+        <!-- PAYMENT HISTORY -->
+        <div style="font-family:Syne,sans-serif;font-size:13px;font-weight:600;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--b1)">Payment History</div>
+        <div id="payHistory" style="max-height:200px;overflow-y:auto">
+          <div style="text-align:center;padding:20px;color:var(--m1);font-size:13px">Loading...</div>
+        </div>
+        <div style="background:var(--s2);border-radius:var(--r);padding:10px 13px;margin-top:10px;display:flex;justify-content:space-between;font-size:13px">
+          <span style="color:var(--m1)">Total Paid</span>
+          <span style="color:var(--gn);font-weight:600" id="profileTotalPaid">₹0</span>
+        </div>
+      </div>
+
+      <!-- EDIT MODE -->
+      <div id="profileEdit" style="display:none">
+        <div class="fr">
+          <div class="fg"><label class="fl">Full Name</label><input type="text" class="fi" id="eName"></div>
+          <div class="fg"><label class="fl">Phone</label><input type="tel" class="fi" id="ePhone"></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label class="fl">Age</label><input type="number" class="fi" id="eAge"></div>
+          <div class="fg"><label class="fl">Weight (kg)</label><input type="number" class="fi" id="eWeight"></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label class="fl">Plan</label>
+            <select class="fi" id="ePlan">
+              <option value="Monthly">Monthly</option>
+              <option value="Quarterly">Quarterly (3 months)</option>
+              <option value="Half Yearly">Half Yearly (6 months)</option>
+              <option value="Yearly">Yearly</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">Fee Amount (₹)</label><input type="number" class="fi" id="eFee"></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label class="fl">Status</label>
+            <select class="fi" id="eStatus">
+              <option value="Paid">Paid</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">Fitness Goal</label>
+            <select class="fi" id="eGoal">
+              <option>Weight Loss</option>
+              <option>Muscle Gain</option>
+              <option>General Fitness</option>
+              <option>Endurance</option>
+            </select>
+          </div>
+        </div>
+        <input type="hidden" id="editMemberId">
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bto" onclick="closeM('profileM')">Close</button>
+      <button class="btn btd btn-sm" onclick="delFromProfile()" id="profileDelBtn">Delete Member</button>
+      <button class="btn btp" id="profileSaveBtn" onclick="saveMemberEdit()" style="display:none">Save Changes</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
