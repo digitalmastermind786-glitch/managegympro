@@ -974,25 +974,23 @@ window.addEventListener('load', async () => {
   const _code = _query.get('code');
 
   if ((_urlType === 'recovery' || _urlType === 'invite' || _urlType === 'signup') && (_accessToken || _code)) {
-    // Clear URL hash immediately
     history.replaceState(null, '', window.location.pathname);
-    // Set session from tokens
     if (_accessToken) {
       await sb.auth.setSession({ access_token: _accessToken, refresh_token: _refreshToken || '' });
     } else if (_code) {
       await sb.auth.exchangeCodeForSession(_code);
     }
-    // Show password screen
     document.getElementById('ls').style.display = 'none';
     document.getElementById('as').style.display = 'none';
     document.getElementById('app').style.display = 'none';
     document.getElementById('setPassScreen').style.display = 'flex';
   } else {
-    // STEP 2: Normal load - check existing session
+    // Normal load
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
       appLoaded = true;
       user = session.user;
+      document.getElementById('ls').style.display = 'flex';
       await loadGym();
     } else {
       document.getElementById('ls').style.display = 'none';
@@ -1000,7 +998,6 @@ window.addEventListener('load', async () => {
     }
   }
 
-  // STEP 3: Listen for auth changes (login/logout/password reset)
   sb.auth.onAuthStateChange(async (event, session) => {
     if (event === 'PASSWORD_RECOVERY') {
       appLoaded = false;
@@ -1082,15 +1079,31 @@ async function doLogout() {
 // ── LOAD ──────────────────────────────────────────────────────────────────────
 async function loadGym() {
   try {
+    // Refresh session first to ensure token is valid
+    const { data: { session: freshSession } } = await sb.auth.getSession();
+    if (!freshSession) {
+      document.getElementById('ls').style.display = 'none';
+      document.getElementById('as').style.display = 'flex';
+      return;
+    }
+    user = freshSession.user;
+
     let { data: g, error: gErr } = await sb.from('gyms').select('*').eq('id', user.id).single();
     if (gErr || !g) {
       // Create gym record if doesn't exist
-      const { data: newG } = await sb.from('gyms').insert({ id: user.id, gym_name: 'My Gym' }).select().single();
-      g = newG || { id: user.id, gym_name: 'My Gym' };
+      const { data: newG, error: insertErr } = await sb.from('gyms').insert({ id: user.id, gym_name: 'My Gym' }).select().single();
+      if (insertErr) {
+        console.error('Insert gym error:', insertErr);
+        // Try selecting again in case it was just created
+        const { data: retryG } = await sb.from('gyms').select('*').eq('id', user.id).single();
+        g = retryG || { id: user.id, gym_name: 'My Gym' };
+      } else {
+        g = newG || { id: user.id, gym_name: 'My Gym' };
+      }
     }
     gym = g;
     document.getElementById('ls').style.display = 'none';
-    document.getElementById('app').style.display = 'block'; document.getElementById('ls').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
     updateSidebar();
     prefillSettings();
     await Promise.all([loadMembers(), loadExpenses()]);
@@ -1851,14 +1864,7 @@ async function doSetPassword() {
     document.getElementById('resetSuc').style.display = 'block';
     setTimeout(async () => {
       const { data: { session } } = await sb.auth.getSession();
-      if (session) {
-        appLoaded = true;
-        user = session.user;
-        document.getElementById('setPassScreen').style.display = 'none';
-        document.getElementById('as').style.display = 'none';
-        document.getElementById('ls').style.display = 'flex';
-        await loadGym();
-      }
+      if (session) { user = session.user; hide('as'); show('ls'); await loadGym(); }
     }, 1500);
   }
 }
